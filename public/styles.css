@@ -9,23 +9,3 @@
   color: white;
   vertical-align: middle;
 }
-
-.status-backlog {
-  background-color: #6e7781;
-}
-
-.status-ready {
-  background-color: #0969da;
-}
-
-.status-in-progress {
-  background-color: #bf8700;
-}
-
-.status-in-review {
-  background-color: #8250df;
-}
-
-.status-done {
-  background-color: #1a7f37;
-}
