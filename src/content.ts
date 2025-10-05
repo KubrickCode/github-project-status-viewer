@@ -38,6 +38,35 @@
     return numbers;
   };
 
+  const calculateMaxBadgeWidth = (): number => {
+    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+    if (badges.length === 0) return 0;
+
+    let maxWidth = 0;
+    badges.forEach((badge) => {
+      const width = (badge as HTMLElement).getBoundingClientRect().width;
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+    });
+
+    return maxWidth;
+  };
+
+  const updateBadgeWidths = () => {
+    const maxWidth = calculateMaxBadgeWidth();
+    if (maxWidth === 0) return;
+
+    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+    badges.forEach((badge) => {
+      (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
+    });
+
+    console.log(
+      `[GitHub Project Status] Updated badge widths to ${maxWidth}px`
+    );
+  };
+
   const addStatusBadge = (
     issueNumber: number,
     status: string,
@@ -71,7 +100,7 @@
       badge.textContent = status;
       badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
 
-      parent.appendChild(badge);
+      parent.insertBefore(badge, link);
       console.log(
         `[GitHub Project Status] Added badge for issue #${issueNumber}: ${status}`
       );
@@ -144,6 +173,10 @@
           );
           addStatusBadge(number, status, color);
         }
+      });
+
+      requestAnimationFrame(() => {
+        updateBadgeWidths();
       });
 
       console.log("[GitHub Project Status] Updated", statuses.length, "issues");

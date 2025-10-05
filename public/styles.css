@@ -1,7 +1,8 @@
 .project-status-badge {
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
+  justify-content: center;
+  margin-right: 8px;
   padding: 2px 8px;
   font-size: 12px;
   font-weight: 500;
@@ -12,6 +13,7 @@
   border: 1px solid #d0d7de;
   vertical-align: middle;
   gap: 6px;
+  box-sizing: border-box;
 }
 
 .project-status-badge::before {
