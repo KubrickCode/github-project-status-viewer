@@ -55,6 +55,12 @@
       "shortcut": "c",
       "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
       "useVsCodeApi": false
+    },
+    {
+      "name": "Rebuild",
+      "color": "orange",
+      "command": "just rebuild",
+      "useVsCodeApi": false
     }
   ],
   "quickCommandButtons.refreshButton": {
