@@ -1,5 +1,6 @@
 (() => {
   type IssueStatus = {
+    color: string | null;
     number: number;
     status: string | null;
   };
@@ -7,27 +8,7 @@
   const GITHUB_ISSUES_URL_PATTERN =
     /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
   const BADGE_CLASS = "project-status-badge";
-
-  const STATUS_COLORS = [
-    "#0969da", // blue
-    "#1a7f37", // green
-    "#bf8700", // yellow
-    "#8250df", // purple
-    "#cf222e", // red
-    "#fb8500", // orange
-    "#0550ae", // dark blue
-    "#116329", // dark green
-    "#6e7781", // gray
-  ];
-
-  const getStatusColor = (status: string): string => {
-    let hash = 0;
-    for (let i = 0; i < status.length; i++) {
-      hash = (hash << 5) - hash + status.charCodeAt(i);
-      hash = hash & hash;
-    }
-    return STATUS_COLORS[Math.abs(hash) % STATUS_COLORS.length];
-  };
+  const DEFAULT_BADGE_COLOR = "#6e7781";
 
   const getIssueNumbers = (): number[] => {
     const issueElements = document.querySelectorAll(
@@ -57,7 +38,11 @@
     return numbers;
   };
 
-  const addStatusBadge = (issueNumber: number, status: string) => {
+  const addStatusBadge = (
+    issueNumber: number,
+    status: string,
+    color: string | null
+  ) => {
     const issueLinks = document.querySelectorAll(
       '[data-testid="issue-pr-title-link"]'
     );
@@ -84,7 +69,7 @@
       const badge = document.createElement("span");
       badge.className = BADGE_CLASS;
       badge.textContent = status;
-      badge.style.backgroundColor = getStatusColor(status);
+      badge.style.backgroundColor = color || DEFAULT_BADGE_COLOR;
 
       parent.appendChild(badge);
       console.log(
@@ -152,12 +137,12 @@
       const statuses: IssueStatus[] = response.statuses;
       console.log("[GitHub Project Status] Processing statuses:", statuses);
 
-      statuses.forEach(({ number, status }) => {
+      statuses.forEach(({ color, number, status }) => {
         if (status) {
           console.log(
             `[GitHub Project Status] Adding badge for issue #${number}: ${status}`
           );
-          addStatusBadge(number, status);
+          addStatusBadge(number, status, color);
         }
       });
 

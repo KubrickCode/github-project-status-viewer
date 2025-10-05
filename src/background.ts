@@ -4,6 +4,7 @@
   };
 
   type IssueStatus = {
+    color: string | null;
     number: number;
     status: string | null;
   };
@@ -17,6 +18,7 @@
             nodes: Array<{
               fieldValues: {
                 nodes: Array<{
+                  color?: string;
                   field?: { name: string };
                   name?: string;
                 }>;
@@ -50,6 +52,7 @@
               nodes {
                 ... on ProjectV2ItemFieldSingleSelectValue {
                   name
+                  color
                   field {
                     ... on ProjectV2SingleSelectField {
                       name
@@ -80,6 +83,7 @@
       nodes: Array<{
         fieldValues: {
           nodes: Array<{
+            color?: string;
             field?: { name: string };
             name?: string;
           }>;
@@ -89,7 +93,10 @@
   };
 
   const buildIssueStatusMap = (issues: IssueNode[]) => {
-    const issueStatusMap = new Map<number, string>();
+    const issueStatusMap = new Map<
+      number,
+      { color: string | null; status: string }
+    >();
 
     issues.forEach((issue) => {
       if (!issue.number || !issue.projectItems.nodes.length) return;
@@ -100,7 +107,10 @@
       );
 
       if (statusField?.name) {
-        issueStatusMap.set(issue.number, statusField.name);
+        issueStatusMap.set(issue.number, {
+          color: statusField.color || null,
+          status: statusField.name,
+        });
       }
     });
 
@@ -175,10 +185,14 @@
 
     const issueStatusMap = buildIssueStatusMap(issues);
 
-    return issueNumbers.map((number) => ({
-      number,
-      status: issueStatusMap.get(number) || null,
-    }));
+    return issueNumbers.map((number) => {
+      const statusData = issueStatusMap.get(number);
+      return {
+        color: statusData?.color || null,
+        number,
+        status: statusData?.status || null,
+      };
+    });
   };
 
   const handleMessage = async (
