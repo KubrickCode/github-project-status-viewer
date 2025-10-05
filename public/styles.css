@@ -1,0 +1,31 @@
+.project-status-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  border-radius: 12px;
+  color: white;
+  vertical-align: middle;
+}
+
+.status-backlog {
+  background-color: #6e7781;
+}
+
+.status-ready {
+  background-color: #0969da;
+}
+
+.status-in-progress {
+  background-color: #bf8700;
+}
+
+.status-in-review {
+  background-color: #8250df;
+}
+
+.status-done {
+  background-color: #1a7f37;
+}
