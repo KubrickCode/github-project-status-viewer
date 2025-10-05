@@ -1,11 +1,25 @@
 .project-status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-left: 8px;
-  padding: 3px 8px;
+  padding: 2px 8px;
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  border-radius: 12px;
-  color: white;
+  font-weight: 500;
+  line-height: 18px;
+  border-radius: 6px;
+  background-color: #f6f8fa;
+  color: #1f2328;
+  border: 1px solid #d0d7de;
   vertical-align: middle;
+  gap: 6px;
+}
+
+.project-status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--status-color);
+  flex-shrink: 0;
 }

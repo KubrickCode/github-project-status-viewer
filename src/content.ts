@@ -69,7 +69,7 @@
       const badge = document.createElement("span");
       badge.className = BADGE_CLASS;
       badge.textContent = status;
-      badge.style.backgroundColor = color || DEFAULT_BADGE_COLOR;
+      badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
 
       parent.appendChild(badge);
       console.log(
