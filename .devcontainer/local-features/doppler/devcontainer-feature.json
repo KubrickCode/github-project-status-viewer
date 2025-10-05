@@ -1,7 +1,0 @@
-{
-  "id": "doppler",
-  "version": "1.0.0",
-  "name": "Doppler CLI",
-  "description": "Installs Doppler CLI for secrets management",
-  "installsAfter": []
-}

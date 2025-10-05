@@ -1,27 +1,10 @@
 version: "3.8"
 
 services:
-  postgres:
-    image: postgres:16.8-alpine
-    restart: unless-stopped
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-    command: ["postgres", "-c", "log_statement=all"]
-    network_mode: "service:workspace"
-
   workspace:
     image: mcr.microsoft.com/devcontainers/base:debian
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     privileged: true
     volumes:
-      - ..:/workspaces/template-repository:delegated
+      - ..:/workspaces/github-project-status-viewer:delegated
       - /var/run/docker.sock:/var/run/docker.sock
     command: sleep infinity
-
-volumes:
-  postgres-data:

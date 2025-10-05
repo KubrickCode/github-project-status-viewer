@@ -50,13 +50,6 @@
       ]
     },
     {
-      "name": "Release",
-      "shortcut": "r",
-      "color": "orange",
-      "command": "git push -f origin main:release",
-      "terminalName": "Release"
-    },
-    {
       "name": "Claude",
       "color": "blue",
       "shortcut": "c",

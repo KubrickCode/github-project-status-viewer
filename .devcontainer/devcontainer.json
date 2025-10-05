@@ -1,15 +1,12 @@
 {
-  "name": "template-repository",
+  "name": "github-project-status-viewer",
   "dockerComposeFile": "docker-compose.yml",
   "service": "workspace",
-  "workspaceFolder": "/workspaces/template-repository",
+  "workspaceFolder": "/workspaces/github-project-status-viewer",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "./local-features/just": {},
-    "./local-features/go": {},
-    "./local-features/node": {},
-    "./local-features/doppler": {}
+    "./local-features/node": {}
   },
-  "remoteUser": "root",
-  "postCreateCommand": "chmod +x .devcontainer/post-create.sh && .devcontainer/post-create.sh"
+  "remoteUser": "root"
 }
