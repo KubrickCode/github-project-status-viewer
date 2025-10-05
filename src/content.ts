@@ -80,15 +80,23 @@
       const href = link.getAttribute("href");
       if (!href?.includes(`/issues/${issueNumber}`)) continue;
 
-      const parent = link.parentElement;
-      if (!parent) {
+      const h3Element = link.closest("h3");
+      if (!h3Element) {
         console.log(
-          `[GitHub Project Status] No parent element for issue #${issueNumber}`
+          `[GitHub Project Status] No h3 element for issue #${issueNumber}`
         );
         continue;
       }
 
-      if (parent.querySelector(`.${BADGE_CLASS}`)) {
+      const container = h3Element.parentElement;
+      if (!container) {
+        console.log(
+          `[GitHub Project Status] No container element for issue #${issueNumber}`
+        );
+        continue;
+      }
+
+      if (container.querySelector(`.${BADGE_CLASS}`)) {
         console.log(
           `[GitHub Project Status] Badge already exists for issue #${issueNumber}`
         );
@@ -100,7 +108,7 @@
       badge.textContent = status;
       badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
 
-      parent.insertBefore(badge, link);
+      container.insertBefore(badge, h3Element);
       console.log(
         `[GitHub Project Status] Added badge for issue #${issueNumber}: ${status}`
       );
