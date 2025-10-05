@@ -1,19 +1,33 @@
 (() => {
-  type ProjectStatus =
-    | "Backlog"
-    | "Ready"
-    | "In progress"
-    | "In review"
-    | "Done";
-
   type IssueStatus = {
     number: number;
-    status: ProjectStatus | null;
+    status: string | null;
   };
 
   const GITHUB_ISSUES_URL_PATTERN =
     /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
   const BADGE_CLASS = "project-status-badge";
+
+  const STATUS_COLORS = [
+    "#0969da", // blue
+    "#1a7f37", // green
+    "#bf8700", // yellow
+    "#8250df", // purple
+    "#cf222e", // red
+    "#fb8500", // orange
+    "#0550ae", // dark blue
+    "#116329", // dark green
+    "#6e7781", // gray
+  ];
+
+  const getStatusColor = (status: string): string => {
+    let hash = 0;
+    for (let i = 0; i < status.length; i++) {
+      hash = (hash << 5) - hash + status.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return STATUS_COLORS[Math.abs(hash) % STATUS_COLORS.length];
+  };
 
   const getIssueNumbers = (): number[] => {
     const issueElements = document.querySelectorAll(
@@ -43,7 +57,7 @@
     return numbers;
   };
 
-  const addStatusBadge = (issueNumber: number, status: ProjectStatus) => {
+  const addStatusBadge = (issueNumber: number, status: string) => {
     const issueLinks = document.querySelectorAll(
       '[data-testid="issue-pr-title-link"]'
     );
@@ -68,11 +82,9 @@
       }
 
       const badge = document.createElement("span");
-      badge.className = `${BADGE_CLASS} status-${status
-        .toLowerCase()
-        .replace(/\s+/g, "-")}`;
+      badge.className = BADGE_CLASS;
       badge.textContent = status;
-      badge.style.marginLeft = "8px";
+      badge.style.backgroundColor = getStatusColor(status);
 
       parent.appendChild(badge);
       console.log(

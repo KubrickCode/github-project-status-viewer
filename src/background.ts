@@ -3,16 +3,9 @@
     pat: string;
   };
 
-  type ProjectStatus =
-    | "Backlog"
-    | "Ready"
-    | "In progress"
-    | "In review"
-    | "Done";
-
   type IssueStatus = {
     number: number;
-    status: ProjectStatus | null;
+    status: string | null;
   };
 
   type GraphQLResponse = {
@@ -96,7 +89,7 @@
   };
 
   const buildIssueStatusMap = (issues: IssueNode[]) => {
-    const issueStatusMap = new Map<number, ProjectStatus>();
+    const issueStatusMap = new Map<number, string>();
 
     issues.forEach((issue) => {
       if (!issue.number || !issue.projectItems.nodes.length) return;
@@ -107,7 +100,7 @@
       );
 
       if (statusField?.name) {
-        issueStatusMap.set(issue.number, statusField.name as ProjectStatus);
+        issueStatusMap.set(issue.number, statusField.name);
       }
     });
 
