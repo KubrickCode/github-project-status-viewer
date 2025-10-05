@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Project Status Viewer",
+  "version": "1.0.0",
+  "description": "Display GitHub Projects status in issue lists",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://api.github.com/*",
+    "https://github.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*/*/issues*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

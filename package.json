@@ -1,0 +1,14 @@
+{
+  "name": "github-project-status-viewer",
+  "version": "1.0.0",
+  "description": "Browser extension to display GitHub Projects status in issue lists",
+  "scripts": {
+    "build": "tsc && cp -r public/* dist/",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.254",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "yarn@1.22.19"
+}
