@@ -2,115 +2,75 @@
 
 A Chrome extension that displays GitHub Projects status directly in your repository's issue list.
 
+![Screenshot](image.png)
+
 ## Features
 
 - 🏷️ Automatically shows project status badges next to each issue
-- 🎨 Color-coded badges for easy visual identification (Backlog, Ready, In progress, In review, Done)
+- 🎨 Color-coded badges matching actual GitHub Projects status colors
 - 🔄 Detects projects automatically from each issue's connections
-- ⚡ Uses GitHub GraphQL API for efficient data fetching
-- 🔒 Secure storage of GitHub Personal Access Token
+- ⚡ Fast loading with efficient GitHub GraphQL API
+- 🔐 Secure OAuth authentication with automatic token refresh
+- 🚀 One-click login - no manual token management required
 
 ## Installation
 
-### 1. Create a GitHub Personal Access Token
+[Install from Chrome Web Store](https://chrome.google.com/webstore) *(link will be available once published)*
 
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Generate a new token with these permissions:
-   - `repo` (Full control of private repositories)
-   - `read:project` (Read access to projects)
+## Quick Start
 
-### 2. Build the Extension
+1. **Install the Extension**
 
-```bash
-just deps
-just build
-```
+   Click "Add to Chrome" from the Chrome Web Store
 
-### 3. Load in Chrome
+2. **Login with GitHub**
 
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode" (top right)
-3. Click "Load unpacked"
-4. Select the `dist` folder
+   - Click the extension icon in your Chrome toolbar
+   - Click "Login with GitHub"
+   - Authorize the application when prompted
 
-### 4. Configure the Extension
+3. **Done!**
 
-1. Click the extension icon in Chrome toolbar
-2. Enter your GitHub Personal Access Token
-3. Click "Save Configuration"
-
-That's it! No need to specify project numbers or usernames.
+   Visit any GitHub repository's issues page and see status badges appear automatically
 
 ## Usage
 
-1. Navigate to any GitHub repository's issues page (e.g., `https://github.com/owner/repo/issues`)
-2. The extension automatically detects which projects each issue belongs to
-3. Status badges appear next to issue titles with color-coding:
-   - **Backlog** - Gray
-   - **Ready** - Blue
-   - **In progress** - Yellow
-   - **In review** - Purple
-   - **Done** - Green
+Simply navigate to any GitHub repository's issues page (e.g., `https://github.com/owner/repo/issues`). The extension will:
 
-## Development
+- Automatically detect which projects each issue belongs to
+- Display status badges next to issue titles
+- Use colors matching your GitHub Projects status field configuration
 
-```bash
-# Install dependencies
-just deps
+No configuration needed - it just works!
 
-# Build for production
-just build
+## FAQ
 
-# Watch mode for development
-just watch
+**Q: Do I need a GitHub Personal Access Token?**
+A: No! The extension uses OAuth - just click "Login with GitHub" and authorize the app.
 
-# Clean build artifacts
-just clean
+**Q: Is my GitHub token safe?**
+A: Yes. Access tokens are stored in session storage (deleted when you close the browser), and the OAuth client secret is never exposed to your browser.
 
-# Rebuild from scratch
-just rebuild
+**Q: Which projects does it support?**
+A: GitHub Projects V2 only (the new projects interface).
 
-# Type check
-just typecheck
-```
+**Q: What if an issue is in multiple projects?**
+A: The extension shows the status from the first connected project.
 
-## Project Structure
+**Q: Does it work on private repositories?**
+A: Yes, as long as you've authorized the extension to access your repositories.
 
-```
-├── src/
-│   ├── popup.ts        # Extension popup (PAT configuration)
-│   ├── content.ts      # Content script (runs on GitHub pages)
-│   └── background.ts   # Service worker (GraphQL API calls)
-├── public/
-│   ├── manifest.json   # Extension manifest
-│   ├── popup.html      # Popup UI
-│   └── styles.css      # Badge styles
-└── dist/               # Built extension files
-```
+## Privacy & Security
 
-## How It Works
+- 🔐 OAuth authentication - no need to create personal access tokens
+- 🔒 Access tokens stored in session storage (automatically deleted when browser closes)
+- 🛡️ OAuth client secret never exposed to your browser (server-side only)
+- ✅ Automatic token refresh - no manual re-authentication needed
+- 🎯 Minimal permissions - only requests `read:project` and `repo` access
 
-1. **Content Script** detects issue list pages and parses issue numbers
-2. Extracts repository owner/name from URL
-3. Sends request to **Service Worker** with issue numbers
-4. Service Worker builds dynamic GraphQL query for each issue
-5. Queries `issue(number: X).projectItems` to get project status
-6. Returns status data to Content Script
-7. Content Script renders colored badges next to each issue
+## Support
 
-## Technical Details
-
-- Uses TypeScript with strict mode
-- Follows IIFE pattern to avoid global scope pollution
-- GraphQL queries are dynamically generated per request
-- Supports GitHub Projects V2 (ProjectV2ItemFieldSingleSelectValue)
-- Handles multiple issues efficiently with single API call
-
-## Limitations
-
-- Requires GitHub Personal Access Token with appropriate permissions
-- Only shows status from first connected project per issue
-- Works only with GitHub Projects V2 (new projects)
+Found a bug or have a feature request? [Open an issue](https://github.com/yourusername/github-project-status-viewer/issues) on GitHub.
 
 ## License
 
