@@ -1,4 +1,4 @@
-node_modules/
-dist/
+extension/node_modules/
+extension/dist/
 *.log
 .DS_Store

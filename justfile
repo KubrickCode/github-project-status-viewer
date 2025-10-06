@@ -1,18 +1,19 @@
 set dotenv-load
 
 root_dir := justfile_directory()
+extension_dir := root_dir / "extension"
 
 build:
-  yarn build
+  cd {{ extension_dir }} && yarn build
 
 clean:
-  rm -rf dist node_modules
+  cd {{ extension_dir }} && rm -rf dist node_modules
 
 degit source_dir target_dir:
   degit https://github.com/KubrickCode/general/{{ source_dir }} {{ target_dir }}
 
 deps:
-  yarn install
+  cd {{ extension_dir }} && yarn install
 
 install-degit:
   #!/usr/bin/env bash
@@ -23,7 +24,7 @@ install-degit:
 rebuild: clean deps build
 
 typecheck:
-  yarn tsc --noEmit
+  cd {{ extension_dir }} && yarn tsc --noEmit
 
 watch:
-  yarn watch
+  cd {{ extension_dir }} && yarn watch

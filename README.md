@@ -2,7 +2,7 @@
 
 A Chrome extension that displays GitHub Projects status directly in your repository's issue list.
 
-![Screenshot](image.png)
+![Screenshot](public/image.png)
 
 ## Features
 
@@ -15,7 +15,7 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 
 ## Installation
 
-[Install from Chrome Web Store](https://chrome.google.com/webstore) *(link will be available once published)*
+[Install from Chrome Web Store](https://chrome.google.com/webstore) _(link will be available once published)_
 
 ## Quick Start
 
