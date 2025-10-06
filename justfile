@@ -23,6 +23,16 @@ install-degit:
 
 rebuild: clean deps build
 
+release version="patch":
+    @echo "🚀 Creating {{version}} release..."
+    npm version {{version}}
+    git push origin main --tags
+    git checkout release
+    git merge main
+    git push origin release
+    git checkout main
+    @echo "✅ Release complete! Check GitHub Actions."
+
 typecheck:
   cd {{ extension_dir }} && yarn tsc --noEmit
 
