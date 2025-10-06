@@ -61,6 +61,13 @@
       "color": "orange",
       "command": "just rebuild",
       "useVsCodeApi": false
+    },
+    {
+      "name": "Release",
+      "color": "hotpink",
+      "command": "git push -f origin main:release",
+      "useVsCodeApi": false,
+      "terminalName": "Release"
     }
   ],
   "quickCommandButtons.refreshButton": {
