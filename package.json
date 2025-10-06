@@ -1,0 +1,10 @@
+{
+  "name": "github-project-status-viewer",
+  "version": "0.0.1",
+  "description": "Browser extension to display GitHub Projects status in issue lists",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KubrickCode/github-project-status-viewer.git"
+  },
+  "license": "MIT"
+}
