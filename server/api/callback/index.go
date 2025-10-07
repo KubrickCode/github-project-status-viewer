@@ -1,22 +1,34 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 
 	"github-project-status-viewer-server/pkg/httputil"
+	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
+	"github-project-status-viewer-server/pkg/redis"
 )
+
+const sessionIDBytes = 32
+
+type CallbackResponse struct {
+	Token string `json:"token"`
+}
+
+func generateSessionID() (string, error) {
+	bytes := make([]byte, sessionIDBytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	oauth.SetCORS(w)
 
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	if r.Method != http.MethodGet {
-		httputil.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "Only GET requests are supported")
+	if !httputil.EnsureMethod(w, r, http.MethodGet) {
 		return
 	}
 
@@ -38,17 +50,40 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := oauth.GetClient()
+	oauthClient, err := oauth.GetClient()
 	if err != nil {
 		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "OAuth configuration missing")
 		return
 	}
 
-	token, err := client.ExchangeCode(code)
+	token, err := oauthClient.ExchangeCode(code)
 	if err != nil {
 		httputil.WriteError(w, http.StatusBadRequest, "exchange_failed", "Failed to exchange authorization code")
 		return
 	}
 
-	httputil.JSON(w, http.StatusOK, token)
+	redisClient, err := redis.GetClient()
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Redis connection failed")
+		return
+	}
+
+	sessionID, err := generateSessionID()
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate session ID")
+		return
+	}
+
+	if err := redisClient.Set(redis.SessionKeyPrefix+sessionID, token.AccessToken, redis.SessionTTL); err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store session")
+		return
+	}
+
+	jwtToken, err := jwt.GenerateToken(sessionID)
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate JWT token")
+		return
+	}
+
+	httputil.JSON(w, http.StatusOK, CallbackResponse{Token: jwtToken})
 }

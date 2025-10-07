@@ -1,17 +1,17 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github-project-status-viewer-server/pkg/auth"
 	"github-project-status-viewer-server/pkg/httputil"
-	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
 	"github-project-status-viewer-server/pkg/redis"
 )
 
-type RefreshResponse struct {
-	Token string `json:"token"`
+type VerifyResponse struct {
+	AccessToken string `json:"access_token"`
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -33,22 +33,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := redisClient.Exists(redis.SessionKeyPrefix + claims.SessionID)
+	accessToken, err := redisClient.Get(redis.SessionKeyPrefix + claims.SessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to check session")
+		if errors.Is(err, redis.ErrKeyNotFound) {
+			httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
+		} else {
+			httputil.WriteError(w, http.StatusInternalServerError, "redis_error", "Failed to retrieve session")
+		}
 		return
 	}
 
-	if !exists {
-		httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
-		return
-	}
-
-	newToken, err := jwt.GenerateToken(claims.SessionID)
-	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate new token")
-		return
-	}
-
-	httputil.JSON(w, http.StatusOK, RefreshResponse{Token: newToken})
+	httputil.JSON(w, http.StatusOK, VerifyResponse{AccessToken: accessToken})
 }
