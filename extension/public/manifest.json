@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
   "name": "GitHub Project Status Viewer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Display GitHub Projects status in issue lists",
   "permissions": [
-    "storage",
-    "activeTab"
+    "identity",
+    "storage"
   ],
   "host_permissions": [
     "https://api.github.com/*",
-    "https://github.com/*"
+    "https://github.com/*",
+    "https://github-project-status-viewer.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html"
