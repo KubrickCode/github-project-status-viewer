@@ -5,6 +5,18 @@
     status: string | null;
   };
 
+  type MessageRequest = {
+    issueNumbers: number[];
+    owner: string;
+    repo: string;
+    type: "GET_PROJECT_STATUS";
+  };
+
+  type MessageResponse = {
+    error?: string;
+    statuses?: IssueStatus[];
+  };
+
   const GITHUB_ISSUES_URL_PATTERN =
     /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
   const BADGE_CLASS = "project-status-badge";
@@ -13,11 +25,6 @@
   const getIssueNumbers = (): number[] => {
     const issueElements = document.querySelectorAll(
       '[data-testid="issue-pr-title-link"]'
-    );
-
-    console.log(
-      "[GitHub Project Status] Found issue links:",
-      issueElements.length
     );
 
     const numbers: number[] = [];
@@ -29,12 +36,10 @@
         if (match) {
           const issueNumber = parseInt(match[1], 10);
           numbers.push(issueNumber);
-          console.log(`[GitHub Project Status] Found issue #${issueNumber}`);
         }
       }
     });
 
-    console.log("[GitHub Project Status] Parsed issue numbers:", numbers);
     return numbers;
   };
 
@@ -61,10 +66,6 @@
     badges.forEach((badge) => {
       (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
     });
-
-    console.log(
-      `[GitHub Project Status] Updated badge widths to ${maxWidth}px`
-    );
   };
 
   const addStatusBadge = (
@@ -81,27 +82,12 @@
       if (!href?.includes(`/issues/${issueNumber}`)) continue;
 
       const h3Element = link.closest("h3");
-      if (!h3Element) {
-        console.log(
-          `[GitHub Project Status] No h3 element for issue #${issueNumber}`
-        );
-        continue;
-      }
+      if (!h3Element) continue;
 
       const container = h3Element.parentElement;
-      if (!container) {
-        console.log(
-          `[GitHub Project Status] No container element for issue #${issueNumber}`
-        );
-        continue;
-      }
+      if (!container) continue;
 
-      if (container.querySelector(`.${BADGE_CLASS}`)) {
-        console.log(
-          `[GitHub Project Status] Badge already exists for issue #${issueNumber}`
-        );
-        return;
-      }
+      if (container.querySelector(`.${BADGE_CLASS}`)) return;
 
       const badge = document.createElement("span");
       badge.className = BADGE_CLASS;
@@ -109,76 +95,45 @@
       badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
 
       container.insertBefore(badge, h3Element);
-      console.log(
-        `[GitHub Project Status] Added badge for issue #${issueNumber}: ${status}`
-      );
       return;
     }
-
-    console.log(
-      `[GitHub Project Status] Could not find link for issue #${issueNumber}`
-    );
   };
 
   const parseRepoInfo = () => {
     const match = window.location.pathname.match(/^\/([^/]+)\/([^/]+)\/issues/);
-    if (!match) {
-      console.log(
-        "[GitHub Project Status] Could not parse repo info from:",
-        window.location.pathname
-      );
-      return null;
-    }
+    if (!match) return null;
 
-    const info = {
+    return {
       owner: match[1],
       repo: match[2],
     };
-
-    console.log("[GitHub Project Status] Parsed repo info:", info);
-    return info;
   };
 
   const updateIssueStatuses = async () => {
-    console.log("[GitHub Project Status] Starting updateIssueStatuses");
-
     const repoInfo = parseRepoInfo();
     if (!repoInfo) return;
 
     const issueNumbers = getIssueNumbers();
-    if (issueNumbers.length === 0) {
-      console.log("[GitHub Project Status] No issues found");
-      return;
-    }
-
-    console.log(
-      "[GitHub Project Status] Requesting status for issues:",
-      issueNumbers
-    );
+    if (issueNumbers.length === 0) return;
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      const request: MessageRequest = {
         issueNumbers,
         owner: repoInfo.owner,
         repo: repoInfo.repo,
         type: "GET_PROJECT_STATUS",
-      });
+      };
 
-      console.log("[GitHub Project Status] Received response:", response);
+      const response: MessageResponse = await chrome.runtime.sendMessage(
+        request
+      );
 
-      if (response.error) {
-        console.error("[GitHub Project Status] Error:", response.error);
-        return;
-      }
+      if (response.error) return;
 
-      const statuses: IssueStatus[] = response.statuses;
-      console.log("[GitHub Project Status] Processing statuses:", statuses);
+      const statuses = response.statuses || [];
 
       statuses.forEach(({ color, number, status }) => {
         if (status) {
-          console.log(
-            `[GitHub Project Status] Adding badge for issue #${number}: ${status}`
-          );
           addStatusBadge(number, status, color);
         }
       });
@@ -186,17 +141,13 @@
       requestAnimationFrame(() => {
         updateBadgeWidths();
       });
-
-      console.log("[GitHub Project Status] Updated", statuses.length, "issues");
     } catch (error) {
-      console.error("[GitHub Project Status] Failed to fetch statuses:", error);
+      // Silent fail
     }
   };
 
   const init = () => {
     if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
-
-    console.log("[GitHub Project Status] Extension loaded on issues page");
 
     updateIssueStatuses();
 

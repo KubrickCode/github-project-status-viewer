@@ -1,12 +1,28 @@
 (() => {
-  type Config = {
-    pat: string;
-  };
-
   type IssueStatus = {
     color: string | null;
     number: number;
     status: string | null;
+  };
+
+  type MessageRequest = {
+    issueNumbers: number[];
+    owner: string;
+    repo: string;
+    type: "GET_PROJECT_STATUS";
+  };
+
+  type MessageResponse = {
+    error?: string;
+    statuses?: IssueStatus[];
+  };
+
+  type VerifyResponse = {
+    access_token: string;
+  };
+
+  type RefreshResponse = {
+    token: string;
   };
 
   type GraphQLResponse = {
@@ -34,11 +50,12 @@
     }>;
   };
 
+  const API_BASE_URL = "https://github-project-status-viewer.vercel.app/api";
   const GITHUB_API_URL = "https://api.github.com/graphql";
   const STATUS_FIELD_NAME = "Status";
-  const CONFIG_ERROR_MESSAGE =
-    "Configuration not found. Please set up your GitHub token in the extension popup.";
-  const STORAGE_KEYS = ["pat"] as const;
+  const AUTH_ERROR_MESSAGE =
+    "Authentication required. Please log in via the extension popup.";
+  const STORAGE_KEY = "jwtToken";
 
   const buildQuery = (issueNumbers: number[]) => {
     const issueQueries = issueNumbers
@@ -117,19 +134,67 @@
     return issueStatusMap;
   };
 
+  type TokenError = Error & { status?: number };
+
+  const getAccessToken = async (jwtToken: string): Promise<string> => {
+    const response = await fetch(`${API_BASE_URL}/verify`, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const error: TokenError = new Error(
+        `Token verification failed: ${response.status}`
+      );
+      error.status = response.status;
+      throw error;
+    }
+
+    const data: VerifyResponse = await response.json();
+    return data.access_token;
+  };
+
+  const refreshJWTToken = async (jwtToken: string): Promise<string> => {
+    const response = await fetch(`${API_BASE_URL}/refresh`, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Token refresh failed: ${response.status}`);
+    }
+
+    const data: RefreshResponse = await response.json();
+    return data.token;
+  };
+
   const fetchProjectStatus = async (
-    config: Config,
+    jwtToken: string,
     owner: string,
     repo: string,
     issueNumbers: number[]
   ): Promise<IssueStatus[]> => {
-    console.log("[GitHub Project Status Background] Sending GraphQL query:", {
-      issueNumbers,
-      owner,
-      repo,
-    });
-
     const query = buildQuery(issueNumbers);
+
+    let accessToken: string;
+    try {
+      accessToken = await getAccessToken(jwtToken);
+    } catch (error) {
+      const tokenError = error as TokenError;
+      if (tokenError.status === 401) {
+        const newJwtToken = await refreshJWTToken(jwtToken);
+        await chrome.storage.session.set({ jwtToken: newJwtToken });
+        accessToken = await getAccessToken(newJwtToken);
+      } else {
+        throw error;
+      }
+    }
 
     const response = await fetch(GITHUB_API_URL, {
       body: JSON.stringify({
@@ -140,22 +205,13 @@
         },
       }),
       headers: {
-        Authorization: `Bearer ${config.pat}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       method: "POST",
     });
 
-    console.log(
-      "[GitHub Project Status Background] Response status:",
-      response.status
-    );
-
     const responseText = await response.text();
-    console.log(
-      "[GitHub Project Status Background] Response body:",
-      responseText
-    );
 
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.status} - ${responseText}`);
@@ -164,18 +220,10 @@
     const data: GraphQLResponse = JSON.parse(responseText);
 
     if (data.errors) {
-      console.error(
-        "[GitHub Project Status Background] GraphQL errors:",
-        data.errors
-      );
       throw new Error(`GraphQL error: ${JSON.stringify(data.errors)}`);
     }
 
     if (!data.data?.repository) {
-      console.error(
-        "[GitHub Project Status Background] Invalid response structure:",
-        data
-      );
       throw new Error("Repository not found");
     }
 
@@ -196,59 +244,28 @@
   };
 
   const handleMessage = async (
-    request: {
-      issueNumbers: number[];
-      owner: string;
-      repo: string;
-      type: string;
-    },
-    sendResponse: (response: {
-      error?: string;
-      statuses?: IssueStatus[];
-    }) => void
+    request: MessageRequest,
+    sendResponse: (response: MessageResponse) => void
   ) => {
     if (request.type !== "GET_PROJECT_STATUS") return false;
 
-    console.log(
-      "[GitHub Project Status Background] Received request:",
-      request
-    );
-
     try {
-      const config = await chrome.storage.sync.get(STORAGE_KEYS);
-      console.log("[GitHub Project Status Background] Config:", {
-        hasPat: !!config.pat,
-      });
+      const result = await chrome.storage.session.get([STORAGE_KEY]);
 
-      if (!config.pat) {
-        console.error("[GitHub Project Status Background] No PAT found");
-        sendResponse({ error: CONFIG_ERROR_MESSAGE });
+      if (!result.jwtToken) {
+        sendResponse({ error: AUTH_ERROR_MESSAGE });
         return true;
       }
 
-      console.log(
-        "[GitHub Project Status Background] Fetching project status for:",
-        {
-          owner: request.owner,
-          repo: request.repo,
-          issueCount: request.issueNumbers.length,
-        }
-      );
-
       const statuses = await fetchProjectStatus(
-        config as Config,
+        result.jwtToken,
         request.owner,
         request.repo,
         request.issueNumbers
       );
 
-      console.log(
-        "[GitHub Project Status Background] Fetched statuses:",
-        statuses
-      );
       sendResponse({ statuses });
     } catch (error) {
-      console.error("[GitHub Project Status Background] Error:", error);
       sendResponse({
         error: error instanceof Error ? error.message : "Unknown error",
       });
@@ -257,8 +274,8 @@
     return true;
   };
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    handleMessage(request, sendResponse);
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    handleMessage(request as MessageRequest, sendResponse);
     return true;
   });
 })();
