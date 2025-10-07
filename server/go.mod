@@ -1,3 +1,3 @@
 module github-project-status-viewer-server
 
-go 1.24
+go 1.23
