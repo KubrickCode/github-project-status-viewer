@@ -1,3 +1,15 @@
+:root {
+  --badge-dark-bg: rgba(110, 118, 129, 0.15);
+  --badge-dark-color: #e6edf3;
+  --badge-dark-border: rgba(110, 118, 129, 0.3);
+  --badge-dark-dot-shadow: 0 0 0 1px rgba(13, 17, 23, 0.4);
+  --badge-dark-compact-border: rgba(13, 17, 23, 0.8);
+  --badge-dark-compact-shadow: 0 0 0 1px rgba(205, 217, 229, 0.1),
+    0 1px 2px rgba(1, 4, 9, 0.3);
+  --badge-dark-compact-hover-shadow: 0 0 0 2px rgba(13, 17, 23, 0.8),
+    0 0 0 3px rgba(205, 217, 229, 0.15), 0 2px 8px rgba(1, 4, 9, 0.4);
+}
+
 .Title-module__container--XD9YG {
   display: flex !important;
   align-items: center !important;
@@ -30,6 +42,7 @@
   border: 1px solid rgba(208, 215, 222, 0.8);
   box-sizing: border-box;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: default;
 }
 
 .project-status-badge::before {
@@ -45,30 +58,81 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
 
+.project-status-badge--compact {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: var(--status-color);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(31, 35, 40, 0.15), 0 1px 2px rgba(31, 35, 40, 0.12);
+  cursor: help;
+  min-width: auto !important;
+  font-size: 0;
+  line-height: 0;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0.38, 0.9),
+    box-shadow 0.15s cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.project-status-badge--compact::before {
+  display: none;
+}
+
+.project-status-badge--compact:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px rgba(31, 35, 40, 0.2),
+    0 2px 8px rgba(31, 35, 40, 0.18);
+  z-index: 1;
+}
+
+.project-status-badge--compact:focus-visible {
+  outline: 2px solid #0969da;
+  outline-offset: 2px;
+  transform: scale(1.3);
+}
+
 /* Dark mode styles - supports both system preference and GitHub's manual theme selection */
 @media (prefers-color-scheme: dark) {
   .project-status-badge {
-    background-color: rgba(110, 118, 129, 0.15);
-    color: #e6edf3;
-    border: 1px solid rgba(110, 118, 129, 0.3);
+    background-color: var(--badge-dark-bg);
+    color: var(--badge-dark-color);
+    border: 1px solid var(--badge-dark-border);
     box-shadow: none;
   }
 
   .project-status-badge::before {
     opacity: 0.85;
-    box-shadow: 0 0 0 1px rgba(13, 17, 23, 0.4);
+    box-shadow: var(--badge-dark-dot-shadow);
+  }
+
+  .project-status-badge--compact {
+    border-color: var(--badge-dark-compact-border);
+    box-shadow: var(--badge-dark-compact-shadow);
+  }
+
+  .project-status-badge--compact:hover {
+    box-shadow: var(--badge-dark-compact-hover-shadow);
   }
 }
 
 /* GitHub manual dark theme selection (data-color-mode="dark") */
 [data-color-mode="dark"] .project-status-badge {
-  background-color: rgba(110, 118, 129, 0.15);
-  color: #e6edf3;
-  border: 1px solid rgba(110, 118, 129, 0.3);
+  background-color: var(--badge-dark-bg);
+  color: var(--badge-dark-color);
+  border: 1px solid var(--badge-dark-border);
   box-shadow: none;
 }
 
 [data-color-mode="dark"] .project-status-badge::before {
   opacity: 0.85;
-  box-shadow: 0 0 0 1px rgba(13, 17, 23, 0.4);
+  box-shadow: var(--badge-dark-dot-shadow);
+}
+
+[data-color-mode="dark"] .project-status-badge--compact {
+  border-color: var(--badge-dark-compact-border);
+  box-shadow: var(--badge-dark-compact-shadow);
+}
+
+[data-color-mode="dark"] .project-status-badge--compact:hover {
+  box-shadow: var(--badge-dark-compact-hover-shadow);
 }

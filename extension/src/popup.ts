@@ -4,9 +4,12 @@
     refresh_token: string;
   };
 
+  type DisplayMode = "compact" | "full";
+
   type StatusType = "error" | "info" | "success";
 
   type UIElements = {
+    displayModeSelect: HTMLSelectElement;
     loginBtn: HTMLButtonElement;
     loginSection: HTMLElement;
     loggedInSection: HTMLElement;
@@ -25,7 +28,9 @@
     SUCCESS_PULSE: "popup__user-info--success",
     VISIBLE: "popup__status--visible",
   } as const;
+  const DISPLAY_MODE_KEY = "displayMode";
   const ELEMENT_ID = {
+    DISPLAY_MODE: "displayMode",
     LOGIN_BTN: "loginBtn",
     LOGIN_SECTION: "loginSection",
     LOGGED_IN_SECTION: "loggedInSection",
@@ -69,6 +74,7 @@
     };
 
     return {
+      displayModeSelect: getElement<HTMLSelectElement>(ELEMENT_ID.DISPLAY_MODE),
       loginBtn: getElement<HTMLButtonElement>(ELEMENT_ID.LOGIN_BTN),
       loginSection: getElement<HTMLElement>(ELEMENT_ID.LOGIN_SECTION),
       loggedInSection: getElement<HTMLElement>(ELEMENT_ID.LOGGED_IN_SECTION),
@@ -259,11 +265,35 @@
     }
   };
 
+  const loadDisplayMode = async (elements: UIElements) => {
+    const { displayModeSelect } = elements;
+    const result = await chrome.storage.sync.get([DISPLAY_MODE_KEY]);
+    const value = result[DISPLAY_MODE_KEY];
+    const mode = value === "compact" ? "compact" : "full";
+    displayModeSelect.value = mode;
+  };
+
+  const handleDisplayModeChange = async (
+    elements: UIElements,
+    mode: DisplayMode
+  ) => {
+    await chrome.storage.sync.set({ [DISPLAY_MODE_KEY]: mode });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, { type: "RELOAD_BADGES" });
+    }
+  };
+
   const init = async () => {
     try {
       const elements = getUIElements();
 
       await updateUI(elements);
+      await loadDisplayMode(elements);
 
       elements.loginBtn.addEventListener("click", () => handleLogin(elements));
       elements.logoutBtn.addEventListener("click", () =>
@@ -272,6 +302,12 @@
       elements.statusClose.addEventListener("click", () =>
         hideStatus(elements)
       );
+      elements.displayModeSelect.addEventListener("change", (e) => {
+        if (!(e.target instanceof HTMLSelectElement)) return;
+        const value = e.target.value;
+        const mode: DisplayMode = value === "compact" ? "compact" : "full";
+        handleDisplayModeChange(elements, mode);
+      });
     } catch (error) {
       console.error("Failed to initialize popup:", error);
     }
