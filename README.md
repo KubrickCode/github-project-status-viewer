@@ -65,10 +65,10 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 
    Click "Add to Chrome" from the Chrome Web Store
 
-2. **Login with GitHub**
+2. **Sign in with GitHub**
 
    - Click the extension icon in your Chrome toolbar
-   - Click "Login with GitHub"
+   - Click "Sign in with GitHub"
    - Authorize the application when prompted
 
 3. **Done!**
@@ -101,7 +101,7 @@ No other configuration needed - it just works!
 ## FAQ
 
 **Q: Do I need a GitHub Personal Access Token?**
-A: No! The extension uses OAuth - just click "Login with GitHub" and authorize the app.
+A: No! The extension uses OAuth - just click "Sign in with GitHub" and authorize the app.
 
 **Q: Is my GitHub token safe?**
 A: Yes. Access tokens are stored in session storage (deleted when you close the browser), and the OAuth client secret is never exposed to your browser.
