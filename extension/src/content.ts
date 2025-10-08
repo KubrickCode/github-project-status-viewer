@@ -17,15 +17,23 @@
     statuses?: IssueStatus[];
   };
 
+  const BADGE_CLASS = "project-status-badge";
+  const DEBOUNCE_DELAY_MS = 500;
+  const DEFAULT_BADGE_COLOR = "#6e7781";
   const GITHUB_ISSUES_URL_PATTERN =
     /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
-  const BADGE_CLASS = "project-status-badge";
-  const DEFAULT_BADGE_COLOR = "#6e7781";
+  const ISSUE_LINK_SELECTOR = '[data-testid="issue-pr-title-link"]';
+  const POLL_INTERVAL_MS = 200;
+  const POLL_TIMEOUT_MS = 5000;
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let isProcessing = false;
+  let observer: MutationObserver | null = null;
+  let pollIntervalId: ReturnType<typeof setInterval> | null = null;
+  let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   const getIssueNumbers = (): number[] => {
-    const issueElements = document.querySelectorAll(
-      '[data-testid="issue-pr-title-link"]'
-    );
+    const issueElements = document.querySelectorAll(ISSUE_LINK_SELECTOR);
 
     const numbers: number[] = [];
 
@@ -73,9 +81,7 @@
     status: string,
     color: string | null
   ) => {
-    const issueLinks = document.querySelectorAll(
-      '[data-testid="issue-pr-title-link"]'
-    );
+    const issueLinks = document.querySelectorAll(ISSUE_LINK_SELECTOR);
 
     for (const link of Array.from(issueLinks)) {
       const href = link.getAttribute("href");
@@ -116,6 +122,10 @@
     const issueNumbers = getIssueNumbers();
     if (issueNumbers.length === 0) return;
 
+    if (isProcessing) return;
+
+    isProcessing = true;
+
     try {
       const request: MessageRequest = {
         issueNumbers,
@@ -143,16 +153,22 @@
       });
     } catch (error) {
       // Silent fail
+    } finally {
+      isProcessing = false;
     }
   };
 
-  const init = () => {
-    if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
+  const startObserving = () => {
+    if (observer) return;
 
-    updateIssueStatuses();
+    observer = new MutationObserver(() => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
 
-    const observer = new MutationObserver(() => {
-      updateIssueStatuses();
+      debounceTimer = setTimeout(() => {
+        updateIssueStatuses();
+      }, DEBOUNCE_DELAY_MS);
     });
 
     observer.observe(document.body, {
@@ -161,5 +177,62 @@
     });
   };
 
-  init();
+  const run = () => {
+    updateIssueStatuses();
+    startObserving();
+  };
+
+  const init = () => {
+    if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
+
+    run();
+  };
+
+  const cleanupPollingTimers = () => {
+    if (pollIntervalId) {
+      clearInterval(pollIntervalId);
+      pollIntervalId = null;
+    }
+    if (pollTimeoutId) {
+      clearTimeout(pollTimeoutId);
+      pollTimeoutId = null;
+    }
+  };
+
+  const cleanupObserver = () => {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+  };
+
+  const handleSPARouting = () => {
+    cleanupObserver();
+    cleanupPollingTimers();
+
+    if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
+
+    pollIntervalId = setInterval(() => {
+      if (document.querySelector(ISSUE_LINK_SELECTOR)) {
+        cleanupPollingTimers();
+        run();
+      }
+    }, POLL_INTERVAL_MS);
+
+    pollTimeoutId = setTimeout(cleanupPollingTimers, POLL_TIMEOUT_MS);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  document.addEventListener("turbo:load", handleSPARouting);
+  document.addEventListener("pjax:end", handleSPARouting);
 })();

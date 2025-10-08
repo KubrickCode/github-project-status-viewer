@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github-project-status-viewer-server/pkg/auth"
 	"github-project-status-viewer-server/pkg/httputil"
+	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
 	"github-project-status-viewer-server/pkg/redis"
 )
@@ -21,9 +21,16 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, err := auth.AuthenticateRequest(r)
+	tokenString := r.Header.Get("Authorization")
+	if len(tokenString) < 7 || tokenString[:7] != "Bearer " {
+		httputil.WriteError(w, http.StatusUnauthorized, "invalid_token", "Bearer token required")
+		return
+	}
+
+	accessToken := tokenString[7:]
+	claims, err := jwt.ValidateAccessToken(accessToken)
 	if err != nil {
-		httputil.WriteError(w, http.StatusUnauthorized, "authentication_failed", err.Error())
+		httputil.WriteError(w, http.StatusUnauthorized, "invalid_access_token", err.Error())
 		return
 	}
 
@@ -33,7 +40,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := redisClient.Get(redis.SessionKeyPrefix + claims.SessionID)
+	githubAccessToken, err := redisClient.Get(redis.SessionKeyPrefix + claims.SessionID)
 	if err != nil {
 		if errors.Is(err, redis.ErrKeyNotFound) {
 			httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
@@ -43,5 +50,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputil.JSON(w, http.StatusOK, VerifyResponse{AccessToken: accessToken})
+	httputil.JSON(w, http.StatusOK, VerifyResponse{AccessToken: githubAccessToken})
 }
