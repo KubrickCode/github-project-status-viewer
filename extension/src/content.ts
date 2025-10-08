@@ -1,4 +1,6 @@
 (() => {
+  type DisplayMode = "compact" | "full";
+
   type IssueStatus = {
     color: string | null;
     number: number;
@@ -18,8 +20,10 @@
   };
 
   const BADGE_CLASS = "project-status-badge";
+  const BADGE_COMPACT_CLASS = "project-status-badge--compact";
   const DEBOUNCE_DELAY_MS = 500;
   const DEFAULT_BADGE_COLOR = "#6e7781";
+  const DISPLAY_MODE_KEY = "displayMode";
   const GITHUB_ISSUES_URL_PATTERN =
     /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
   const ISSUE_LINK_SELECTOR = '[data-testid="issue-pr-title-link"]';
@@ -66,21 +70,74 @@
     return maxWidth;
   };
 
-  const updateBadgeWidths = () => {
+  const updateBadgeWidths = async () => {
+    const displayMode = await getDisplayMode();
+    if (displayMode === "compact") return;
+
     const maxWidth = calculateMaxBadgeWidth();
     if (maxWidth === 0) return;
 
-    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+    const badges = document.querySelectorAll(
+      `.${BADGE_CLASS}:not(.${BADGE_COMPACT_CLASS})`
+    );
     badges.forEach((badge) => {
       (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
     });
   };
 
-  const addStatusBadge = (
+  const updateBadgeDisplay = async (
+    badge: HTMLElement,
+    displayMode: DisplayMode,
+    status: string
+  ) => {
+    if (displayMode === "compact") {
+      badge.classList.add(BADGE_COMPACT_CLASS);
+      badge.textContent = "";
+      badge.title = status;
+      badge.setAttribute("role", "img");
+      badge.setAttribute("aria-label", `Status: ${status}`);
+      badge.tabIndex = 0;
+      badge.style.minWidth = "";
+    } else {
+      badge.classList.remove(BADGE_COMPACT_CLASS);
+      badge.textContent = status;
+      badge.title = "";
+      badge.removeAttribute("role");
+      badge.removeAttribute("aria-label");
+      badge.tabIndex = -1;
+    }
+  };
+
+  const refreshAllBadges = async () => {
+    const displayMode = await getDisplayMode();
+    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+
+    for (const badge of Array.from(badges)) {
+      const statusText = badge.getAttribute("data-status");
+      if (statusText) {
+        await updateBadgeDisplay(badge as HTMLElement, displayMode, statusText);
+      }
+    }
+
+    if (displayMode === "full") {
+      requestAnimationFrame(() => {
+        updateBadgeWidths();
+      });
+    }
+  };
+
+  const getDisplayMode = async (): Promise<DisplayMode> => {
+    const result = await chrome.storage.sync.get([DISPLAY_MODE_KEY]);
+    const value = result[DISPLAY_MODE_KEY];
+    return value === "compact" ? "compact" : "full";
+  };
+
+  const addStatusBadge = async (
     issueNumber: number,
     status: string,
     color: string | null
   ) => {
+    const displayMode = await getDisplayMode();
     const issueLinks = document.querySelectorAll(ISSUE_LINK_SELECTOR);
 
     for (const link of Array.from(issueLinks)) {
@@ -97,8 +154,10 @@
 
       const badge = document.createElement("span");
       badge.className = BADGE_CLASS;
-      badge.textContent = status;
+      badge.setAttribute("data-status", status);
       badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
+
+      await updateBadgeDisplay(badge, displayMode, status);
 
       container.insertBefore(badge, h3Element);
       return;
@@ -142,15 +201,13 @@
 
       const statuses = response.statuses || [];
 
-      statuses.forEach(({ color, number, status }) => {
+      for (const { color, number, status } of statuses) {
         if (status) {
-          addStatusBadge(number, status, color);
+          await addStatusBadge(number, status, color);
         }
-      });
+      }
 
-      requestAnimationFrame(() => {
-        updateBadgeWidths();
-      });
+      await updateBadgeWidths();
     } catch (error) {
       // Silent fail
     } finally {
@@ -235,7 +292,12 @@
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "RELOAD_BADGES") {
-      updateIssueStatuses();
+      const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+      if (badges.length > 0) {
+        refreshAllBadges();
+      } else {
+        updateIssueStatuses();
+      }
     }
   });
 
