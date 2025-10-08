@@ -108,7 +108,6 @@
 
 body {
   width: var(--popup-width);
-  min-height: 200px;
   padding: var(--popup-padding);
   margin: 0;
   font-family: var(--font-family);
@@ -357,7 +356,6 @@ body {
    ============================================ */
 
 .popup__status {
-  margin-top: var(--space-4);
   padding: var(--space-3) var(--space-4);
   padding-right: var(--space-8);
   border-radius: var(--radius-md);
@@ -367,6 +365,10 @@ body {
   position: relative;
   animation: slideDown var(--transition-base);
   border-left: 3px solid transparent;
+}
+
+.popup__status--visible {
+  margin-top: var(--space-4);
 }
 
 .popup__status--visible {
