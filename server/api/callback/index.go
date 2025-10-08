@@ -11,10 +11,22 @@ import (
 	"github-project-status-viewer-server/pkg/redis"
 )
 
-const sessionIDBytes = 32
+const (
+	refreshTokenIDBytes = 32
+	sessionIDBytes      = 32
+)
 
 type CallbackResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func generateRefreshTokenID() (string, error) {
+	bytes := make([]byte, refreshTokenIDBytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }
 
 func generateSessionID() (string, error) {
@@ -79,11 +91,31 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken, err := jwt.GenerateToken(sessionID)
+	refreshTokenID, err := generateRefreshTokenID()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate JWT token")
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token ID")
 		return
 	}
 
-	httputil.JSON(w, http.StatusOK, CallbackResponse{Token: jwtToken})
+	if err := redisClient.Set(redis.RefreshTokenKeyPrefix+refreshTokenID, sessionID, redis.RefreshTokenTTL); err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store refresh token")
+		return
+	}
+
+	accessToken, err := jwt.GenerateAccessToken(sessionID)
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate access token")
+		return
+	}
+
+	refreshToken, err := jwt.GenerateRefreshToken(refreshTokenID, sessionID)
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token")
+		return
+	}
+
+	httputil.JSON(w, http.StatusOK, CallbackResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 }

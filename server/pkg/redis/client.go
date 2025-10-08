@@ -13,9 +13,11 @@ import (
 )
 
 const (
-	SessionKeyPrefix = "session:"
-	SessionTTL       = 30 * 24 * time.Hour
-	defaultTimeout   = 10 * time.Second
+	RefreshTokenKeyPrefix = "refresh_token:"
+	RefreshTokenTTL       = 30 * 24 * time.Hour
+	SessionKeyPrefix      = "session:"
+	SessionTTL            = 30 * 24 * time.Hour
+	defaultTimeout        = 10 * time.Second
 )
 
 var ErrKeyNotFound = errors.New("key not found")
@@ -91,6 +93,11 @@ func (c *Client) Get(key string) (string, error) {
 	}
 
 	return str, nil
+}
+
+func (c *Client) Delete(key string) error {
+	_, err := c.execute([]any{"DEL", key})
+	return err
 }
 
 func (c *Client) Exists(key string) (bool, error) {

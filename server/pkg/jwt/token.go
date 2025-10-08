@@ -9,12 +9,19 @@ import (
 )
 
 const (
-	TokenExpiration = 2 * time.Hour
-	TokenIssuer     = "github-project-status-viewer"
+	AccessTokenExpiration  = 15 * time.Minute
+	RefreshTokenExpiration = 30 * 24 * time.Hour
+	TokenIssuer            = "github-project-status-viewer"
 )
 
-type Claims struct {
+type AccessTokenClaims struct {
 	SessionID string `json:"session_id"`
+	jwt.RegisteredClaims
+}
+
+type RefreshTokenClaims struct {
+	RefreshTokenID string `json:"refresh_token_id"`
+	SessionID      string `json:"session_id"`
 	jwt.RegisteredClaims
 }
 
@@ -46,11 +53,11 @@ func NewManager() (*Manager, error) {
 	return &Manager{secret: []byte(secret)}, nil
 }
 
-func (m *Manager) GenerateToken(sessionID string) (string, error) {
-	claims := Claims{
+func (m *Manager) GenerateAccessToken(sessionID string) (string, error) {
+	claims := AccessTokenClaims{
 		SessionID: sessionID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExpiration)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(AccessTokenExpiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    TokenIssuer,
 		},
@@ -60,8 +67,23 @@ func (m *Manager) GenerateToken(sessionID string) (string, error) {
 	return token.SignedString(m.secret)
 }
 
-func (m *Manager) ValidateToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
+func (m *Manager) GenerateRefreshToken(refreshTokenID, sessionID string) (string, error) {
+	claims := RefreshTokenClaims{
+		RefreshTokenID: refreshTokenID,
+		SessionID:      sessionID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(RefreshTokenExpiration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    TokenIssuer,
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(m.secret)
+}
+
+func (m *Manager) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -69,29 +91,65 @@ func (m *Manager) ValidateToken(tokenString string) (*Claims, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, fmt.Errorf("failed to parse access token: %w", err)
 	}
 
-	claims, ok := token.Claims.(*Claims)
+	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok {
-		return nil, fmt.Errorf("invalid token claims type")
+		return nil, fmt.Errorf("invalid access token claims type")
 	}
 
 	return claims, nil
 }
 
-func GenerateToken(sessionID string) (string, error) {
+func (m *Manager) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return m.secret, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse refresh token: %w", err)
+	}
+
+	claims, ok := token.Claims.(*RefreshTokenClaims)
+	if !ok {
+		return nil, fmt.Errorf("invalid refresh token claims type")
+	}
+
+	return claims, nil
+}
+
+func GenerateAccessToken(sessionID string) (string, error) {
 	manager, err := GetManager()
 	if err != nil {
 		return "", err
 	}
-	return manager.GenerateToken(sessionID)
+	return manager.GenerateAccessToken(sessionID)
 }
 
-func ValidateToken(tokenString string) (*Claims, error) {
+func GenerateRefreshToken(refreshTokenID, sessionID string) (string, error) {
+	manager, err := GetManager()
+	if err != nil {
+		return "", err
+	}
+	return manager.GenerateRefreshToken(refreshTokenID, sessionID)
+}
+
+func ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
 	manager, err := GetManager()
 	if err != nil {
 		return nil, err
 	}
-	return manager.ValidateToken(tokenString)
+	return manager.ValidateAccessToken(tokenString)
+}
+
+func ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
+	manager, err := GetManager()
+	if err != nil {
+		return nil, err
+	}
+	return manager.ValidateRefreshToken(tokenString)
 }
