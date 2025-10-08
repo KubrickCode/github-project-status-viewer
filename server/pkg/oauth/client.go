@@ -18,6 +18,7 @@ type Client struct {
 	ClientID     string
 	ClientSecret string
 	HTTPClient   *http.Client
+	TokenURL     string
 }
 
 var defaultClient *Client
@@ -49,6 +50,7 @@ func NewClient() (*Client, error) {
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		HTTPClient:   &http.Client{Timeout: 10 * time.Second},
+		TokenURL:     githubTokenURL,
 	}, nil
 }
 
@@ -72,7 +74,11 @@ func (c *Client) RefreshToken(refreshToken string) (*TokenResponse, error) {
 }
 
 func (c *Client) requestToken(data url.Values) (*TokenResponse, error) {
-	req, err := http.NewRequest(http.MethodPost, githubTokenURL, strings.NewReader(data.Encode()))
+	tokenURL := c.TokenURL
+	if tokenURL == "" {
+		tokenURL = githubTokenURL
+	}
+	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

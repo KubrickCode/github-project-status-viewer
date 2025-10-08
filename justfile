@@ -2,6 +2,7 @@ set dotenv-load
 
 root_dir := justfile_directory()
 extension_dir := root_dir / "extension"
+server_dir := root_dir / "server"
 
 build:
   cd {{ extension_dir }} && yarn build
@@ -38,3 +39,13 @@ typecheck:
 
 watch:
   cd {{ extension_dir }} && yarn watch
+
+go-test:
+  cd {{ server_dir }} && \
+  JWT_SECRET=test-secret \
+  KV_REST_API_URL=http://test-redis.local \
+  KV_REST_API_TOKEN=test-token \
+  GITHUB_CLIENT_ID=test-client-id \
+  GITHUB_CLIENT_SECRET=test-client-secret \
+  CHROME_EXTENSION_ID=test-extension-id \
+  go test -v ./pkg/...
