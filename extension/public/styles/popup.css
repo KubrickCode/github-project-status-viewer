@@ -138,18 +138,8 @@ body {
 .popup__heading-icon {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, var(--color-success-emphasis) 0%, var(--color-accent-emphasis) 100%);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-}
-
-.popup__heading-icon svg {
-  width: 18px;
-  height: 18px;
-  color: white;
+  object-fit: contain;
 }
 
 .popup__help-text {
