@@ -44,3 +44,31 @@
   background-color: var(--status-color);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
+
+/* Dark mode styles - supports both system preference and GitHub's manual theme selection */
+@media (prefers-color-scheme: dark) {
+  .project-status-badge {
+    background-color: rgba(110, 118, 129, 0.15);
+    color: #e6edf3;
+    border: 1px solid rgba(110, 118, 129, 0.3);
+    box-shadow: none;
+  }
+
+  .project-status-badge::before {
+    opacity: 0.85;
+    box-shadow: 0 0 0 1px rgba(13, 17, 23, 0.4);
+  }
+}
+
+/* GitHub manual dark theme selection (data-color-mode="dark") */
+[data-color-mode="dark"] .project-status-badge {
+  background-color: rgba(110, 118, 129, 0.15);
+  color: #e6edf3;
+  border: 1px solid rgba(110, 118, 129, 0.3);
+  box-shadow: none;
+}
+
+[data-color-mode="dark"] .project-status-badge::before {
+  opacity: 0.85;
+  box-shadow: 0 0 0 1px rgba(13, 17, 23, 0.4);
+}
