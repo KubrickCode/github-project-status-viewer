@@ -30,12 +30,14 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 <td width="50%">
 
 ### Login
+
 ![Login](public/extension_1.png)
 
 </td>
 <td width="50%">
 
 ### Connected
+
 ![Connected](public/extension_2.png)
 
 </td>
@@ -89,6 +91,7 @@ You can customize how status badges appear:
 - **Compact**: Shows only colored dots - hover to see status text
 
 To change display mode:
+
 1. Click the extension icon in your Chrome toolbar
 2. Select your preferred mode from the "Display Mode" dropdown
 3. Badges update instantly on all open GitHub issue pages
