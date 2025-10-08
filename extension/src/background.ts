@@ -22,7 +22,8 @@
   };
 
   type RefreshResponse = {
-    token: string;
+    access_token: string;
+    refresh_token: string;
   };
 
   type GraphQLResponse = {
@@ -53,9 +54,10 @@
   const API_BASE_URL = "https://github-project-status-viewer.vercel.app/api";
   const GITHUB_API_URL = "https://api.github.com/graphql";
   const STATUS_FIELD_NAME = "Status";
+  const ACCESS_TOKEN_KEY = "accessToken";
   const AUTH_ERROR_MESSAGE =
     "Authentication required. Please log in via the extension popup.";
-  const STORAGE_KEY = "jwtToken";
+  const REFRESH_TOKEN_KEY = "refreshToken";
 
   const buildQuery = (issueNumbers: number[]) => {
     const issueQueries = issueNumbers
@@ -136,10 +138,10 @@
 
   type TokenError = Error & { status?: number };
 
-  const getAccessToken = async (jwtToken: string): Promise<string> => {
+  const getGithubAccessToken = async (accessToken: string): Promise<string> => {
     const response = await fetch(`${API_BASE_URL}/verify`, {
       headers: {
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -157,10 +159,12 @@
     return data.access_token;
   };
 
-  const refreshJWTToken = async (jwtToken: string): Promise<string> => {
+  const refreshTokens = async (
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> => {
     const response = await fetch(`${API_BASE_URL}/refresh`, {
       headers: {
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${refreshToken}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -171,26 +175,40 @@
     }
 
     const data: RefreshResponse = await response.json();
-    return data.token;
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+    };
   };
 
   const fetchProjectStatus = async (
-    jwtToken: string,
+    accessToken: string,
+    refreshToken: string,
     owner: string,
     repo: string,
     issueNumbers: number[]
   ): Promise<IssueStatus[]> => {
     const query = buildQuery(issueNumbers);
 
-    let accessToken: string;
+    let githubAccessToken: string;
+    let currentAccessToken = accessToken;
+    let currentRefreshToken = refreshToken;
+
     try {
-      accessToken = await getAccessToken(jwtToken);
+      githubAccessToken = await getGithubAccessToken(currentAccessToken);
     } catch (error) {
       const tokenError = error as TokenError;
       if (tokenError.status === 401) {
-        const newJwtToken = await refreshJWTToken(jwtToken);
-        await chrome.storage.session.set({ jwtToken: newJwtToken });
-        accessToken = await getAccessToken(newJwtToken);
+        const tokens = await refreshTokens(currentRefreshToken);
+        currentAccessToken = tokens.accessToken;
+        currentRefreshToken = tokens.refreshToken;
+
+        await chrome.storage.session.set({
+          [ACCESS_TOKEN_KEY]: currentAccessToken,
+          [REFRESH_TOKEN_KEY]: currentRefreshToken,
+        });
+
+        githubAccessToken = await getGithubAccessToken(currentAccessToken);
       } else {
         throw error;
       }
@@ -205,7 +223,7 @@
         },
       }),
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${githubAccessToken}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -250,15 +268,19 @@
     if (request.type !== "GET_PROJECT_STATUS") return false;
 
     try {
-      const result = await chrome.storage.session.get([STORAGE_KEY]);
+      const result = await chrome.storage.session.get([
+        ACCESS_TOKEN_KEY,
+        REFRESH_TOKEN_KEY,
+      ]);
 
-      if (!result.jwtToken) {
+      if (!result[ACCESS_TOKEN_KEY] || !result[REFRESH_TOKEN_KEY]) {
         sendResponse({ error: AUTH_ERROR_MESSAGE });
         return true;
       }
 
       const statuses = await fetchProjectStatus(
-        result.jwtToken,
+        result[ACCESS_TOKEN_KEY],
+        result[REFRESH_TOKEN_KEY],
         request.owner,
         request.repo,
         request.issueNumbers

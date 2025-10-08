@@ -1,17 +1,29 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 
-	"github-project-status-viewer-server/pkg/auth"
 	"github-project-status-viewer-server/pkg/httputil"
 	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
 	"github-project-status-viewer-server/pkg/redis"
 )
 
+const refreshTokenIDBytes = 32
+
 type RefreshResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func generateRefreshTokenID() (string, error) {
+	bytes := make([]byte, refreshTokenIDBytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -21,15 +33,37 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, err := auth.AuthenticateRequest(r)
+	tokenString := r.Header.Get("Authorization")
+	if len(tokenString) < 7 || tokenString[:7] != "Bearer " {
+		httputil.WriteError(w, http.StatusUnauthorized, "invalid_token", "Bearer token required")
+		return
+	}
+
+	refreshToken := tokenString[7:]
+	claims, err := jwt.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		httputil.WriteError(w, http.StatusUnauthorized, "authentication_failed", err.Error())
+		httputil.WriteError(w, http.StatusUnauthorized, "invalid_refresh_token", err.Error())
 		return
 	}
 
 	redisClient, err := redis.GetClient()
 	if err != nil {
 		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Redis connection failed")
+		return
+	}
+
+	storedSessionID, err := redisClient.Get(redis.RefreshTokenKeyPrefix + claims.RefreshTokenID)
+	if err != nil {
+		if err == redis.ErrKeyNotFound {
+			httputil.WriteError(w, http.StatusUnauthorized, "refresh_token_revoked", "Refresh token has been revoked or expired")
+		} else {
+			httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to verify refresh token")
+		}
+		return
+	}
+
+	if storedSessionID != claims.SessionID {
+		httputil.WriteError(w, http.StatusUnauthorized, "session_mismatch", "Session mismatch detected")
 		return
 	}
 
@@ -44,11 +78,36 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newToken, err := jwt.GenerateToken(claims.SessionID)
-	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate new token")
+	if err := redisClient.Delete(redis.RefreshTokenKeyPrefix + claims.RefreshTokenID); err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to revoke old refresh token")
 		return
 	}
 
-	httputil.JSON(w, http.StatusOK, RefreshResponse{Token: newToken})
+	newRefreshTokenID, err := generateRefreshTokenID()
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token ID")
+		return
+	}
+
+	if err := redisClient.Set(redis.RefreshTokenKeyPrefix+newRefreshTokenID, claims.SessionID, redis.RefreshTokenTTL); err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store new refresh token")
+		return
+	}
+
+	newAccessToken, err := jwt.GenerateAccessToken(claims.SessionID)
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate access token")
+		return
+	}
+
+	newRefreshToken, err := jwt.GenerateRefreshToken(newRefreshTokenID, claims.SessionID)
+	if err != nil {
+		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token")
+		return
+	}
+
+	httputil.JSON(w, http.StatusOK, RefreshResponse{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+	})
 }

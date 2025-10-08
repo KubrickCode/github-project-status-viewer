@@ -1,18 +1,16 @@
 (() => {
-  type AuthConfig = {
-    jwtToken: string;
-  };
-
   type CallbackResponse = {
-    token: string;
+    access_token: string;
+    refresh_token: string;
   };
 
+  const ACCESS_TOKEN_KEY = "accessToken";
   const API_BASE_URL = "https://github-project-status-viewer.vercel.app/api";
   const GITHUB_CLIENT_ID = "Ov23liFFkeCk13ofhM7c";
   const GITHUB_OAUTH_URL = "https://github.com/login/oauth/authorize";
   const OAUTH_SCOPE_STRING = "repo read:project";
+  const REFRESH_TOKEN_KEY = "refreshToken";
   const STATUS_DISPLAY_DURATION = 3000;
-  const STORAGE_KEY = "jwtToken";
 
   const generateState = (): string => {
     const array = new Uint8Array(32);
@@ -37,8 +35,11 @@
   };
 
   const checkAuthStatus = async (): Promise<boolean> => {
-    const result = await chrome.storage.session.get([STORAGE_KEY]);
-    return !!result.jwtToken;
+    const result = await chrome.storage.session.get([
+      ACCESS_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
+    ]);
+    return !!(result[ACCESS_TOKEN_KEY] && result[REFRESH_TOKEN_KEY]);
   };
 
   const updateUI = async () => {
@@ -105,8 +106,10 @@
 
       const data: CallbackResponse = await response.json();
 
-      const config: AuthConfig = { jwtToken: data.token };
-      await chrome.storage.session.set(config);
+      await chrome.storage.session.set({
+        [ACCESS_TOKEN_KEY]: data.access_token,
+        [REFRESH_TOKEN_KEY]: data.refresh_token,
+      });
 
       showStatus(statusDiv, "Login successful!", "success");
       await updateUI();
@@ -121,7 +124,10 @@
 
   const handleLogout = async (statusDiv: HTMLDivElement) => {
     try {
-      await chrome.storage.session.remove([STORAGE_KEY]);
+      await chrome.storage.session.remove([
+        ACCESS_TOKEN_KEY,
+        REFRESH_TOKEN_KEY,
+      ]);
       showStatus(statusDiv, "Logged out successfully", "success");
       await updateUI();
     } catch (error) {
