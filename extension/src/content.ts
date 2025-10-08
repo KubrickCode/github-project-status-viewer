@@ -233,6 +233,12 @@
     init();
   }
 
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === "RELOAD_BADGES") {
+      updateIssueStatuses();
+    }
+  });
+
   document.addEventListener("turbo:load", handleSPARouting);
   document.addEventListener("pjax:end", handleSPARouting);
 })();

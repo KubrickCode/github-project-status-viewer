@@ -221,6 +221,14 @@
 
       showStatus(elements, "Successfully connected to GitHub!", "success");
       await updateUI(elements, true);
+
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, { type: "RELOAD_BADGES" });
+      }
     } catch (error) {
       const message =
         error instanceof Error
