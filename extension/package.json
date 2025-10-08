@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Browser extension to display GitHub Projects status in issue lists",
   "scripts": {
-    "build": "tsc && cp -r public/* dist/",
+    "build": "tsc && mkdir -p dist/styles && cp -r public/* dist/",
     "watch": "tsc --watch"
   },
   "devDependencies": {
