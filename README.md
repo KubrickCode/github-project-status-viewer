@@ -23,6 +23,10 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 
 ![Demo](public/play.gif)
 
+### Dark Mode
+
+![Dark Mode](public/dark_mode.png)
+
 ## Extension Popup
 
 <table>
@@ -46,6 +50,7 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 
 - 🏷️ Automatically shows project status badges next to each issue
 - 🎨 Color-coded badges matching actual GitHub Projects status colors
+- 🌓 Dark mode support - badges adapt to GitHub's theme
 - 🔄 Detects projects automatically from each issue's connections
 - ⚡ Fast loading with efficient GitHub GraphQL API
 - 🔐 Secure OAuth authentication with automatic token refresh
