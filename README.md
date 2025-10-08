@@ -47,6 +47,7 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
 - 🏷️ Automatically shows project status badges next to each issue
 - 🎨 Color-coded badges matching actual GitHub Projects status colors
 - 🌓 Dark mode support - badges adapt to GitHub's theme
+- 📐 Display mode options - choose between default (with text) or compact (color dot only) badges
 - 🔄 Detects projects automatically from each issue's connections
 - ⚡ Fast loading with efficient GitHub GraphQL API
 - 🔐 Secure OAuth authentication with automatic token refresh
@@ -80,7 +81,19 @@ Simply navigate to any GitHub repository's issues page (e.g., `https://github.co
 - Display status badges next to issue titles
 - Use colors matching your GitHub Projects status field configuration
 
-No configuration needed - it just works!
+### Display Modes
+
+You can customize how status badges appear:
+
+- **Default**: Shows full status text with colored background (e.g., "In progress")
+- **Compact**: Shows only colored dots - hover to see status text
+
+To change display mode:
+1. Click the extension icon in your Chrome toolbar
+2. Select your preferred mode from the "Display Mode" dropdown
+3. Badges update instantly on all open GitHub issue pages
+
+No other configuration needed - it just works!
 
 ## FAQ
 
