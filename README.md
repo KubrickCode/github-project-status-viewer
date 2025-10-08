@@ -2,7 +2,45 @@
 
 A Chrome extension that displays GitHub Projects status directly in your repository's issue list.
 
-![Screenshot](public/image.png)
+<table>
+<tr>
+<td width="50%">
+
+### Before
+![Before](public/issue_list_before.png)
+
+</td>
+<td width="50%">
+
+### After
+![After](public/issue_list_after.png)
+
+</td>
+</tr>
+</table>
+
+## Demo
+
+![Demo](public/play.gif)
+
+## Extension Popup
+
+<table>
+<tr>
+<td width="50%">
+
+### Login
+![Login](public/extension_1.png)
+
+</td>
+<td width="50%">
+
+### Connected
+![Connected](public/extension_2.png)
+
+</td>
+</tr>
+</table>
 
 ## Features
 
