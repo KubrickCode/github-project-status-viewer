@@ -54,8 +54,27 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
+      - name: Setup Node.js
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Just
+        if: steps.check.outputs.exists == 'false'
+        uses: extractions/setup-just@v2
+
+      - name: Install dependencies
+        if: steps.check.outputs.exists == 'false'
+        run: just deps
+
+      - name: Build and package extension
+        if: steps.check.outputs.exists == 'false'
+        run: just package
+
       - name: Create GitHub Release
         if: steps.check.outputs.exists == 'false'
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
@@ -64,6 +83,60 @@ jobs:
             ## 🚀 What's New in ${{ steps.version.outputs.version }}
 
             ${{ steps.changelog.outputs.changelog }}
+
+            ## 📦 Installation
+            Download the extension.zip file and load it as an unpacked extension in Chrome.
+
+            ## 🔄 Deployment Status
+            - GitHub Release: ✅ Created
+            - Chrome Web Store: ⏳ Publishing...
+          files: extension/extension.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Chrome Web Store
+        if: steps.check.outputs.exists == 'false'
+        id: chrome_upload
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: extension/extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          publish: true
+
+      - name: Update release notes with success
+        if: steps.check.outputs.exists == 'false' && success()
+        run: |
+          gh release edit ${{ steps.version.outputs.version }} --notes "## 🚀 What's New in ${{ steps.version.outputs.version }}
+
+          ${{ steps.changelog.outputs.changelog }}
+
+          ## 📦 Installation
+          Download the extension.zip file and load it as an unpacked extension in Chrome.
+
+          ## 🔄 Deployment Status
+          - GitHub Release: ✅ Created
+          - Chrome Web Store: ✅ Published successfully"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Update release notes with failure
+        if: steps.check.outputs.exists == 'false' && failure()
+        run: |
+          gh release edit ${{ steps.version.outputs.version }} --notes "## 🚀 What's New in ${{ steps.version.outputs.version }}
+
+          ${{ steps.changelog.outputs.changelog }}
+
+          ## 📦 Installation
+          Download the extension.zip file and load it as an unpacked extension in Chrome.
+
+          ## 🔄 Deployment Status
+          - GitHub Release: ✅ Created
+          - Chrome Web Store: ❌ Failed to publish
+
+          Please check the [GitHub Actions logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+        env:
+          GH_TOKEN: ${{ github.token }}

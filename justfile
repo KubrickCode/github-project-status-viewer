@@ -7,6 +7,13 @@ server_dir := root_dir / "server"
 build:
   cd {{ extension_dir }} && yarn build
 
+package: build
+  #!/usr/bin/env bash
+  cd {{ extension_dir }}
+  rm -f extension.zip
+  cd dist && zip -r ../extension.zip ./*
+  echo "✅ Extension packaged to extension/extension.zip"
+
 clean:
   cd {{ extension_dir }} && rm -rf dist node_modules
 
