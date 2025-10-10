@@ -12,9 +12,6 @@
   "editor.foldingImportsByDefault": true,
   "files.insertFinalNewline": true,
   "files.autoSave": "onFocusChange",
-  "[prisma]": {
-    "editor.defaultFormatter": "Prisma.prisma"
-  },
   "quickCommandButtons.buttons": [
     {
       "name": "$(git-branch) Git",
