@@ -32,14 +32,29 @@ install-degit:
 rebuild: clean deps build
 
 release version="patch":
-    @echo "🚀 Creating {{version}} release..."
-    npm version {{version}}
+    #!/usr/bin/env bash
+    set -e
+    echo "🚀 Creating {{version}} release..."
+
+    npm version {{version}} --no-git-tag-version
+    NEW_VERSION=$(node -p "require('./package.json').version")
+
+    cd {{ extension_dir }}/public
+    cat manifest.json | jq --arg v "$NEW_VERSION" '.version = $v' > manifest.json.tmp
+    mv manifest.json.tmp manifest.json
+    cd {{ root_dir }}
+
+    git add package.json extension/public/manifest.json
+    git commit -m "bump version to $NEW_VERSION"
+    git tag "v$NEW_VERSION"
+
     git push origin main --tags
     git checkout release
     git merge main
     git push origin release
     git checkout main
-    @echo "✅ Release complete! Check GitHub Actions."
+
+    echo "✅ Release complete! Check GitHub Actions."
 
 typecheck:
   cd {{ extension_dir }} && yarn tsc --noEmit
