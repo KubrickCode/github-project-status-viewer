@@ -53,7 +53,7 @@ typecheck:
 watch:
     cd {{ extension_dir }} && yarn watch
 
-go-test:
+test-server:
     cd {{ server_dir }} && \
     JWT_SECRET=test-secret \
     KV_REST_API_URL=http://test-redis.local \
