@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**CRITICAL**
+
+- Always follow the .claude/WORK_RULES.md document when working.
+- Always update CLAUDE.md and README.md when completing large-scale tasks. Ignore minor changes.
+
 ## Project Overview
 
 GitHub Project Status Viewer is a Chrome browser extension that displays GitHub Projects V2 status badges directly in repository issue lists. It uses the GitHub GraphQL API to fetch project status information and dynamically renders color-coded badges next to each issue.
@@ -11,51 +16,59 @@ GitHub Project Status Viewer is a Chrome browser extension that displays GitHub 
 The project uses `just` as the task runner (not npm scripts directly):
 
 ```bash
-# Install dependencies
-just deps
-
-# Build for production (compiles TypeScript and copies public files to dist/)
-just build
-
-# Development watch mode (TypeScript only)
-just watch
-
-# Type checking without emitting files
-just typecheck
-
-# Clean build artifacts
-just clean
-
-# Full rebuild
-just rebuild
+just deps         # Install dependencies
+just build        # Production build (compile TypeScript, copy public/ files to dist/)
+just watch        # Development watch mode (TypeScript only)
+just typecheck    # Type checking without emitting files
+just clean        # Clean build artifacts
+just rebuild      # Full rebuild (clean + deps + build)
+just package      # Create extension.zip for distribution
+just lint         # Run Prettier + ESLint (extension, server, config, justfile)
+just test-server  # Run Go server tests
 ```
 
-Note: `yarn` is the package manager (yarn@1.22.19), but use `just` commands for development tasks.
+Package manager: yarn@1.22.19
 
 ## Architecture
 
-### Three-Component Extension Pattern
+### Chrome Manifest V3 Three-Component Pattern
 
 The extension follows Chrome Manifest V3 architecture with three distinct components that communicate via message passing:
 
-1. **Content Script** (`src/content.ts`)
+1. **Content Script** (`extension/src/content.ts`)
    - Runs on GitHub issue list pages matching `https://github.com/*/*/issues*`
    - DOM manipulation: Parses issue numbers from `[data-testid="issue-pr-title-link"]` elements
    - Uses MutationObserver to detect dynamic page updates
    - Sends requests to background script via `chrome.runtime.sendMessage`
    - Renders status badges by injecting `<span class="project-status-badge">` elements
+   - SPA routing support: Handles `turbo:load`, `pjax:end` events
 
-2. **Service Worker** (`src/background.ts`)
+2. **Service Worker** (`extension/src/background.ts`)
    - Handles GraphQL API communication with GitHub
    - Dynamically builds queries for multiple issues using aliases (e.g., `issue0: issue(number: 1)`)
-   - Authenticates with GitHub Personal Access Token from chrome.storage.sync
+   - Authenticates with OAuth tokens from chrome.storage.session
    - Extracts status from `ProjectV2ItemFieldSingleSelectValue` nodes
    - Returns status map to content script
+   - Includes automatic token refresh logic
 
-3. **Popup UI** (`src/popup.ts`)
-   - Simple configuration interface for storing GitHub PAT
-   - Persists configuration to chrome.storage.sync
+3. **Popup UI** (`extension/src/popup.ts`)
+   - Handles GitHub OAuth login (using chrome.identity.launchWebAuthFlow)
+   - Manages display mode settings (full/compact)
+   - Stores access/refresh tokens in chrome.storage.session
    - No direct communication with content script or background worker
+
+### OAuth Authentication Flow
+
+```
+User clicks "Sign in with GitHub"
+  → Popup initiates GitHub OAuth via chrome.identity.launchWebAuthFlow
+  → Extracts code parameter from GitHub callback URL
+  → Sends code to backend API (/api/callback)
+  → Backend returns access_token + refresh_token
+  → Stores tokens in chrome.storage.session
+  → Background verifies token (/api/verify) then calls GitHub API
+  → Automatically refreshes via /api/refresh when token expires
+```
 
 ### Key Data Flow
 
@@ -65,7 +78,7 @@ User visits GitHub issues page
   → Sends {type: "GET_PROJECT_STATUS", owner, repo, issueNumbers} to background
   → Background builds GraphQL query with issue aliases
   → Queries GitHub API for projectItems.fieldValues where field.name === "Status"
-  → Returns [{number, status}] to content script
+  → Returns [{number, status, color}] to content script
   → Content script injects badges next to issue titles
 ```
 
@@ -84,7 +97,12 @@ query($owner: String!, $name: String!) {
             nodes {
               ... on ProjectV2ItemFieldSingleSelectValue {
                 name
-                field { name }
+                color
+                field {
+                  ... on ProjectV2SingleSelectField {
+                    name
+                  }
+                }
               }
             }
           }
@@ -98,7 +116,7 @@ query($owner: String!, $name: String!) {
 
 ## Code Style Requirements
 
-From `.claude/CODING_GUIDE.md`:
+From `.claude/WORK_RULES.md`:
 
 - **Types over Interfaces**: Always use `type` instead of `interface`
 - **Arrow functions**: Use arrow functions outside of classes
@@ -107,30 +125,31 @@ From `.claude/CODING_GUIDE.md`:
 - **Early returns**: Minimize conditional depth with early returns
 - **Constants**: Extract magic values to named constants (e.g., `STATUS_FIELD_NAME = "Status"`)
 - **No any types**: Avoid unsafe type systems
-- **Minimal comments**: Write self-documenting code
+- **Minimal comments**: Write self-documenting code, only include comments for unavoidable business logic
 
 ## TypeScript Configuration
 
 - Target: ES2020
 - Module: CommonJS
-- Strict mode enabled
-- Output: `./dist` directory
-- Source: `./src` directory
+- Strict mode: enabled
+- Output: `./extension/dist`
+- Source: `./extension/src`
 
-## Testing Workflow
+## Server Architecture (Go)
 
-There are no automated tests currently. Manual testing requires:
+The server consists of Go serverless functions deployed on Vercel:
 
-1. Build the extension: `just build`
-2. Load unpacked extension from `dist/` folder in Chrome
-3. Configure GitHub PAT in extension popup
-4. Navigate to any GitHub repo's issues page
-5. Verify badges appear next to issues with project assignments
+- `/api/callback`: OAuth callback, exchanges code for access_token
+- `/api/verify`: JWT verification, returns GitHub access token
+- `/api/refresh`: Issues new access/refresh tokens using refresh token
+- Stores refresh tokens in Redis (Vercel KV)
+- JWT-based authentication
 
 ## Important Implementation Details
 
 - **Status field detection**: Only shows status from the FIRST connected project per issue
-- **Supported statuses**: "Backlog", "Ready", "In progress", "In review", "Done"
 - **GitHub Projects V2 only**: Does not support legacy Projects (V1)
 - **Badge deduplication**: Checks for existing `.project-status-badge` before injecting
+- **Display modes**: full (with text), compact (color dot only)
+- **Badge width alignment**: All badges aligned to max width in full mode
 - **Error handling**: Background script logs GraphQL errors but gracefully degrades in content script
