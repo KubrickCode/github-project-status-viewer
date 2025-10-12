@@ -1,0 +1,88 @@
+name: Lint Code
+
+on:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - unlocked
+    paths:
+      - "extension/**"
+      - "server/**"
+      - "**/*.json"
+      - "**/*.yml"
+      - "**/*.yaml"
+      - "**/*.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "extension/**"
+      - "server/**"
+      - "**/*.json"
+      - "**/*.yml"
+      - "**/*.yaml"
+      - "**/*.md"
+  workflow_dispatch:
+
+jobs:
+  lint-extension:
+    name: Lint Extension Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.18.0"
+
+      - name: Install Prettier globally
+        run: npm install -g prettier
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install dependencies
+        run: just deps
+
+      - name: Lint Extension
+        run: just lint extension
+
+  lint-server:
+    name: Lint Server Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Lint Server
+        run: just lint server
+
+  lint-config:
+    name: Lint Config Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.18.0"
+
+      - name: Install Prettier globally
+        run: npm install -g prettier
+
+      - uses: extractions/setup-just@v3
+
+      - name: Lint Config Files
+        run: just lint config
