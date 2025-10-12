@@ -55,8 +55,7 @@
   const GITHUB_API_URL = "https://api.github.com/graphql";
   const STATUS_FIELD_NAME = "Status";
   const ACCESS_TOKEN_KEY = "accessToken";
-  const AUTH_ERROR_MESSAGE =
-    "Authentication required. Please log in via the extension popup.";
+  const AUTH_ERROR_MESSAGE = "Authentication required. Please log in via the extension popup.";
   const REFRESH_TOKEN_KEY = "refreshToken";
 
   const buildQuery = (issueNumbers: number[]) => {
@@ -112,10 +111,7 @@
   };
 
   const buildIssueStatusMap = (issues: IssueNode[]) => {
-    const issueStatusMap = new Map<
-      number,
-      { color: string | null; status: string }
-    >();
+    const issueStatusMap = new Map<number, { color: string | null; status: string }>();
 
     issues.forEach((issue) => {
       if (!issue.number || !issue.projectItems.nodes.length) return;
@@ -148,9 +144,7 @@
     });
 
     if (!response.ok) {
-      const error: TokenError = new Error(
-        `Token verification failed: ${response.status}`
-      );
+      const error: TokenError = new Error(`Token verification failed: ${response.status}`);
       error.status = response.status;
       throw error;
     }
@@ -268,10 +262,7 @@
     if (request.type !== "GET_PROJECT_STATUS") return false;
 
     try {
-      const result = await chrome.storage.session.get([
-        ACCESS_TOKEN_KEY,
-        REFRESH_TOKEN_KEY,
-      ]);
+      const result = await chrome.storage.session.get([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
 
       if (!result[ACCESS_TOKEN_KEY] || !result[REFRESH_TOKEN_KEY]) {
         sendResponse({ error: AUTH_ERROR_MESSAGE });

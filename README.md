@@ -66,7 +66,6 @@ A Chrome extension that displays GitHub Projects status directly in your reposit
    Click "Add to Chrome" from the Chrome Web Store
 
 2. **Sign in with GitHub**
-
    - Click the extension icon in your Chrome toolbar
    - Click "Sign in with GitHub"
    - Authorize the application when prompted

@@ -24,8 +24,7 @@
   const DEBOUNCE_DELAY_MS = 500;
   const DEFAULT_BADGE_COLOR = "#6e7781";
   const DISPLAY_MODE_KEY = "displayMode";
-  const GITHUB_ISSUES_URL_PATTERN =
-    /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
+  const GITHUB_ISSUES_URL_PATTERN = /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
   const ISSUE_LINK_SELECTOR = '[data-testid="issue-pr-title-link"]';
   const POLL_INTERVAL_MS = 200;
   const POLL_TIMEOUT_MS = 5000;
@@ -77,9 +76,7 @@
     const maxWidth = calculateMaxBadgeWidth();
     if (maxWidth === 0) return;
 
-    const badges = document.querySelectorAll(
-      `.${BADGE_CLASS}:not(.${BADGE_COMPACT_CLASS})`
-    );
+    const badges = document.querySelectorAll(`.${BADGE_CLASS}:not(.${BADGE_COMPACT_CLASS})`);
     badges.forEach((badge) => {
       (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
     });
@@ -132,11 +129,7 @@
     return value === "compact" ? "compact" : "full";
   };
 
-  const addStatusBadge = async (
-    issueNumber: number,
-    status: string,
-    color: string | null
-  ) => {
+  const addStatusBadge = async (issueNumber: number, status: string, color: string | null) => {
     const displayMode = await getDisplayMode();
     const issueLinks = document.querySelectorAll(ISSUE_LINK_SELECTOR);
 
@@ -193,9 +186,7 @@
         type: "GET_PROJECT_STATUS",
       };
 
-      const response: MessageResponse = await chrome.runtime.sendMessage(
-        request
-      );
+      const response: MessageResponse = await chrome.runtime.sendMessage(request);
 
       if (response.error) return;
 
@@ -208,7 +199,7 @@
       }
 
       await updateBadgeWidths();
-    } catch (error) {
+    } catch {
       // Silent fail
     } finally {
       isProcessing = false;
