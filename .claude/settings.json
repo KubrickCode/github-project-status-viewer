@@ -4,17 +4,6 @@
     "command": "bash /workspaces/github-project-status-viewer/.claude/statusline.sh"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /workspaces/github-project-status-viewer/.claude/notify.sh"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "",
