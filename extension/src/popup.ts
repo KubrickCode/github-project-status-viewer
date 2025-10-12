@@ -10,9 +10,9 @@
 
   type UIElements = {
     displayModeSelect: HTMLSelectElement;
+    loggedInSection: HTMLElement;
     loginBtn: HTMLButtonElement;
     loginSection: HTMLElement;
-    loggedInSection: HTMLElement;
     logoutBtn: HTMLButtonElement;
     statusClose: HTMLButtonElement;
     statusDiv: HTMLDivElement;
@@ -31,9 +31,9 @@
   const DISPLAY_MODE_KEY = "displayMode";
   const ELEMENT_ID = {
     DISPLAY_MODE: "displayMode",
+    LOGGED_IN_SECTION: "loggedInSection",
     LOGIN_BTN: "loginBtn",
     LOGIN_SECTION: "loginSection",
-    LOGGED_IN_SECTION: "loggedInSection",
     LOGOUT_BTN: "logoutBtn",
     STATUS: "status",
     STATUS_CLOSE: "statusClose",
@@ -59,9 +59,7 @@
   const generateState = (): string => {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-      ""
-    );
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
   };
 
   const getUIElements = (): UIElements => {
@@ -75,9 +73,9 @@
 
     return {
       displayModeSelect: getElement<HTMLSelectElement>(ELEMENT_ID.DISPLAY_MODE),
+      loggedInSection: getElement<HTMLElement>(ELEMENT_ID.LOGGED_IN_SECTION),
       loginBtn: getElement<HTMLButtonElement>(ELEMENT_ID.LOGIN_BTN),
       loginSection: getElement<HTMLElement>(ELEMENT_ID.LOGIN_SECTION),
-      loggedInSection: getElement<HTMLElement>(ELEMENT_ID.LOGGED_IN_SECTION),
       logoutBtn: getElement<HTMLButtonElement>(ELEMENT_ID.LOGOUT_BTN),
       statusClose: getElement<HTMLButtonElement>(ELEMENT_ID.STATUS_CLOSE),
       statusDiv: getElement<HTMLDivElement>(ELEMENT_ID.STATUS),
@@ -97,11 +95,7 @@
     }
   };
 
-  const showStatus = (
-    elements: UIElements,
-    message: string,
-    type: StatusType
-  ) => {
+  const showStatus = (elements: UIElements, message: string, type: StatusType) => {
     const { statusDiv, statusIconPath, statusMessage } = elements;
 
     if (statusHideTimer) {
@@ -129,10 +123,7 @@
   };
 
   const checkAuthStatus = async (): Promise<boolean> => {
-    const result = await chrome.storage.session.get([
-      ACCESS_TOKEN_KEY,
-      REFRESH_TOKEN_KEY,
-    ]);
+    const result = await chrome.storage.session.get([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
     return !!(result[ACCESS_TOKEN_KEY] && result[REFRESH_TOKEN_KEY]);
   };
 
@@ -144,7 +135,7 @@
   };
 
   const updateUI = async (elements: UIElements, showPulse = false) => {
-    const { loginSection, loggedInSection } = elements;
+    const { loggedInSection, loginSection } = elements;
     const isLoggedIn = await checkAuthStatus();
 
     if (isLoggedIn) {
@@ -199,8 +190,9 @@
         return;
       }
 
-      const { [OAUTH_STATE_KEY]: storedState } =
-        await chrome.storage.session.get([OAUTH_STATE_KEY]);
+      const { [OAUTH_STATE_KEY]: storedState } = await chrome.storage.session.get([
+        OAUTH_STATE_KEY,
+      ]);
 
       if (returnedState !== storedState) {
         showStatus(elements, "Security validation failed", "error");
@@ -213,9 +205,7 @@
       const response = await fetch(callbackUrl);
 
       if (!response.ok) {
-        throw new Error(
-          `Authentication failed (${response.status}). Please try again.`
-        );
+        throw new Error(`Authentication failed (${response.status}). Please try again.`);
       }
 
       const data: CallbackResponse = await response.json();
@@ -236,10 +226,7 @@
         chrome.tabs.sendMessage(tab.id, { type: "RELOAD_BADGES" });
       }
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Login failed. Please try again.";
+      const message = error instanceof Error ? error.message : "Login failed. Please try again.";
       showStatus(elements, message, "error");
     } finally {
       setButtonLoading(loginBtn, false);
@@ -252,13 +239,10 @@
     setButtonLoading(logoutBtn, true);
 
     try {
-      await chrome.storage.session.remove([
-        ACCESS_TOKEN_KEY,
-        REFRESH_TOKEN_KEY,
-      ]);
+      await chrome.storage.session.remove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
       showStatus(elements, "Signed out successfully", "success");
       await updateUI(elements);
-    } catch (error) {
+    } catch {
       showStatus(elements, "Sign out failed. Please try again.", "error");
     } finally {
       setButtonLoading(logoutBtn, false);
@@ -273,10 +257,7 @@
     displayModeSelect.value = mode;
   };
 
-  const handleDisplayModeChange = async (
-    elements: UIElements,
-    mode: DisplayMode
-  ) => {
+  const handleDisplayModeChange = async (elements: UIElements, mode: DisplayMode) => {
     await chrome.storage.sync.set({ [DISPLAY_MODE_KEY]: mode });
 
     const [tab] = await chrome.tabs.query({
@@ -296,12 +277,8 @@
       await loadDisplayMode(elements);
 
       elements.loginBtn.addEventListener("click", () => handleLogin(elements));
-      elements.logoutBtn.addEventListener("click", () =>
-        handleLogout(elements)
-      );
-      elements.statusClose.addEventListener("click", () =>
-        hideStatus(elements)
-      );
+      elements.logoutBtn.addEventListener("click", () => handleLogout(elements));
+      elements.statusClose.addEventListener("click", () => hideStatus(elements));
       elements.displayModeSelect.addEventListener("change", (e) => {
         if (!(e.target instanceof HTMLSelectElement)) return;
         const value = e.target.value;
