@@ -126,6 +126,12 @@ A: Yes, as long as you've authorized the extension to access your repositories.
 
 Found a bug or have a feature request? [Open an issue](https://github.com/KubrickCode/github-project-status-viewer/issues) on GitHub.
 
+## Contributing
+
+This project started as a small personal project with a development environment highly tailored to the owner. Given the low probability of external contributors, the current setup is unlikely to change.
+
+If you'd like to contribute, please contact kubrickcode@gmail.com and we'll adapt the environment to accommodate contributions.
+
 ## License
 
 MIT
