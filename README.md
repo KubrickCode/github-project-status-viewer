@@ -124,7 +124,7 @@ A: Yes, as long as you've authorized the extension to access your repositories.
 
 ## Support
 
-Found a bug or have a feature request? [Open an issue](https://github.com/yourusername/github-project-status-viewer/issues) on GitHub.
+Found a bug or have a feature request? [Open an issue](https://github.com/KubrickCode/github-project-status-viewer/issues) on GitHub.
 
 ## License
 
