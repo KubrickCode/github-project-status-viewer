@@ -14,6 +14,7 @@
     "vscode": {
       "extensions": ["esbenp.prettier-vscode"],
       "settings": {
+        "prettier.resolveGlobalModules": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
       }
     }
