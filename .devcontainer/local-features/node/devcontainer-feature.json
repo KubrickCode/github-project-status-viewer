@@ -1,23 +1,7 @@
 {
   "dependsOn": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22.11.0"
-    }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": ["esbenp.prettier-vscode"],
-      "settings": {
-        "[javascript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[typescript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[typescriptreact]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        }
-      }
+      "version": "22.18.0"
     }
   }
 }

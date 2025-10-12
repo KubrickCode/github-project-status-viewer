@@ -1,7 +1,7 @@
 {
   "dependsOn": {
     "ghcr.io/devcontainers/features/go:1": {
-      "version": "1.25"
+      "version": "1.23"
     }
   },
   "customizations": {

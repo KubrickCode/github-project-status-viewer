@@ -5,9 +5,18 @@
   "workspaceFolder": "/workspaces/github-project-status-viewer",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "./local-features/go": {},
     "./local-features/just": {},
-    "./local-features/node": {},
-    "./local-features/go": {}
+    "./local-features/node": {}
+  },
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install -g prettier && npm install -g baedal",
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode"],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
   },
   "remoteUser": "root"
 }
