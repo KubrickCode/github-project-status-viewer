@@ -62,7 +62,7 @@ jobs:
 
       - name: Install Just
         if: steps.check.outputs.exists == 'false'
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v3
 
       - name: Install dependencies
         if: steps.check.outputs.exists == 'false'
