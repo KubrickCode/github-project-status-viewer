@@ -14,17 +14,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'file=\"$TOOL_ARG_file_path\"; case \"$file\" in extension/*.ts) just lint extension;; server/*.go) just lint server;; *.json|*.yml|*.yaml|*.md) just lint config;; justfile) just lint justfile;; esac'"
-          }
-        ]
-      }
     ]
   }
 }
