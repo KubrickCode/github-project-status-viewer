@@ -60,6 +60,7 @@
       "name": "Rebuild",
       "color": "orange",
       "command": "just rebuild",
+      "terminalName": "Rebuild",
       "useVsCodeApi": false
     },
     {
