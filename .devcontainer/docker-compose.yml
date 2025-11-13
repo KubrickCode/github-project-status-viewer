@@ -7,4 +7,10 @@ services:
     volumes:
       - ..:/workspaces/github-project-status-viewer:delegated
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOME}/.env.secrets:/root/.env.secrets:ro
+    env_file:
+      - ${HOME}/.env.secrets
     command: sleep infinity
+
+volumes:
+  claude-sessions:
