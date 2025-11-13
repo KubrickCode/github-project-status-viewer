@@ -3,3 +3,13 @@
 npm install -g @anthropic-ai/claude-code
 npm install -g prettier
 npm install -g baedal
+
+if [ ! -f ~/.claude/config.json ]; then
+    echo '{}' > ~/.claude/config.json
+fi
+
+if [ -f ~/.claude.json ] && [ ! -L ~/.claude.json ]; then
+    mv ~/.claude.json ~/.claude/config.json
+fi
+
+ln -sf ~/.claude/config.json ~/.claude.json
