@@ -1,6 +1,6 @@
 ---
 name: chrome-extension-specialist
-description: Specialist in Chrome extension architecture and implementation
+description: Chrome extension architecture and implementation specialist. Use PROACTIVELY when building browser extensions with Manifest V3, implementing content scripts, or preparing Chrome Web Store deployment.
 model: sonnet
 ---
 

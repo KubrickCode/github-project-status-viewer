@@ -1,8 +1,8 @@
 ---
 name: rest-api
 description: |
-  Standard guide for REST API design and implementation. URL structure, pagination, sorting, filtering, error handling standardized patterns.
-  TRIGGER: REST API design, endpoint definition, RESTful principle application, HTTP status code decision, response structure design
+  Provides REST API design and implementation standards. Ensures proper URL structure, pagination, sorting, filtering, and error handling patterns. Specializes in RESTful principles, HTTP method semantics, status code usage, versioning strategies, HATEOAS, and API documentation. Implements consistent response structures and content negotiation.
+  Use when: designing REST API endpoints, defining URL structures and naming conventions, implementing pagination/sorting/filtering, choosing appropriate HTTP methods (GET/POST/PUT/PATCH/DELETE), selecting HTTP status codes, designing request/response schemas, handling API errors and validation, implementing API versioning, documenting APIs with OpenAPI/Swagger, or designing hypermedia controls (HATEOAS).
 ---
 
 # REST API Design Standards
