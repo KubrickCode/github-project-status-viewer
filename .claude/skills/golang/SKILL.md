@@ -1,8 +1,8 @@
 ---
 name: golang
 description: |
-  Coding conventions and best practices for writing Go code. Idiomatic Go style, error handling, and testing guide.
-  TRIGGER: .go file work, Go module development, interface design, test writing, error handling patterns
+  Provides idiomatic Go programming expertise and best practices. Ensures clean, efficient, and maintainable code following official Go conventions. Specializes in concurrent programming patterns, interface design, error handling strategies, and performance optimization. Masters standard library usage and ecosystem integration.
+  Use when: writing Go code (.go files), designing interfaces and struct types, implementing concurrent patterns (goroutines/channels), handling errors idiomatically, writing table-driven tests, creating Go modules, optimizing performance-critical code, managing dependencies with go.mod, implementing HTTP servers and clients, working with context propagation, or designing package APIs for public libraries.
 ---
 
 # Go Coding Standards

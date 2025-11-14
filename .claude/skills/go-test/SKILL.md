@@ -1,8 +1,8 @@
 ---
 name: go-test
 description: |
-  Standard testing package guide for writing Go test code. Table-driven tests, subtests, and benchmark patterns.
-  TRIGGER: _test.go file work, testing.T, t.Run, table tests, benchmarks, test writing requests
+  Provides Go standard testing package expertise and best practices. Ensures proper table-driven test patterns, subtests organization, benchmark implementation, and test coverage strategies. Specializes in testing.T/testing.B usage, test helpers, mock interfaces, race detection, and integration testing patterns following Go conventions.
+  Use when: writing Go test files (_test.go), implementing table-driven tests with subtests (t.Run), creating benchmark tests (testing.B), writing example tests for documentation, implementing test helpers and fixtures, mocking interfaces for unit tests, measuring code coverage with go test -cover, detecting race conditions with -race flag, or organizing integration tests in Go projects.
 ---
 
 # Go Testing Code Guide
