@@ -17,7 +17,12 @@ package: build
 clean:
     cd {{ extension_dir }} && rm -rf dist node_modules
 
-deps:
+deps: deps-root deps-extension
+
+deps-root:
+    yarn install
+
+deps-extension:
     cd {{ extension_dir }} && yarn install
 
 rebuild: clean deps build
@@ -74,7 +79,7 @@ lint target="all":
         just lint justfile
         ;;
       extension)
-        prettier --write "{{ extension_dir }}/src/**/*.ts"
+        npx prettier --write "{{ extension_dir }}/src/**/*.ts"
         cd "{{ extension_dir }}"
         yarn lint
         ;;
@@ -82,7 +87,7 @@ lint target="all":
         gofmt -w "{{ server_dir }}"
         ;;
       config)
-        prettier --write "**/*.{json,yml,yaml,md}"
+        npx prettier --write "**/*.{json,yml,yaml,md}"
         ;;
       justfile)
         just --fmt --unstable
