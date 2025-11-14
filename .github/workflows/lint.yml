@@ -39,9 +39,6 @@ jobs:
         with:
           node-version: "22.18.0"
 
-      - name: Install Prettier globally
-        run: npm install -g prettier
-
       - uses: extractions/setup-just@v3
 
       - name: Install dependencies
@@ -78,9 +75,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22.18.0"
-
-      - name: Install Prettier globally
-        run: npm install -g prettier
 
       - uses: extractions/setup-just@v3
 
