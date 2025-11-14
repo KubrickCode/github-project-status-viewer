@@ -28,7 +28,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Apply to both implementation and documentation
   - Verbose documentation causes review burden for humans
 
-
 ## Project Overview
 
 GitHub Project Status Viewer is a Chrome browser extension that displays GitHub Projects V2 status badges directly in repository issue lists. It uses the GitHub GraphQL API to fetch project status information and dynamically renders color-coded badges next to each issue.
