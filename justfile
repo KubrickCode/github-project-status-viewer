@@ -5,7 +5,7 @@ extension_dir := root_dir / "extension"
 server_dir := root_dir / "server"
 
 build:
-    cd {{ extension_dir }} && yarn build
+    cd {{ extension_dir }} && pnpm build
 
 package: build
     #!/usr/bin/env bash
@@ -20,10 +20,10 @@ clean:
 deps: deps-root deps-extension
 
 deps-root:
-    yarn install
+    pnpm install
 
 deps-extension:
-    cd {{ extension_dir }} && yarn install
+    cd {{ extension_dir }} && pnpm install
 
 rebuild: clean deps build
 
@@ -53,10 +53,10 @@ release version="patch":
     echo "✅ Release complete! Check GitHub Actions."
 
 typecheck:
-    cd {{ extension_dir }} && yarn tsc --noEmit
+    cd {{ extension_dir }} && pnpm tsc --noEmit
 
 watch:
-    cd {{ extension_dir }} && yarn watch
+    cd {{ extension_dir }} && pnpm watch
 
 test-server:
     cd {{ server_dir }} && \
@@ -81,7 +81,7 @@ lint target="all":
       extension)
         npx prettier --write "{{ extension_dir }}/src/**/*.ts"
         cd "{{ extension_dir }}"
-        yarn lint
+        pnpm lint
         ;;
       server)
         gofmt -w "{{ server_dir }}"
