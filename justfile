@@ -27,30 +27,23 @@ deps-extension:
 
 rebuild: clean deps build
 
-release version="patch":
-    #!/usr/bin/env bash
-    set -e
-    echo "🚀 Creating {{ version }} release..."
-
-    npm version {{ version }} --no-git-tag-version
-    NEW_VERSION=$(node -p "require('./package.json').version")
-
-    cd {{ extension_dir }}/public
-    cat manifest.json | jq --arg v "$NEW_VERSION" '.version = $v' > manifest.json.tmp
-    mv manifest.json.tmp manifest.json
-    cd {{ root_dir }}
-
-    git add package.json extension/public/manifest.json
-    git commit -m "bump version to $NEW_VERSION"
-    git tag "v$NEW_VERSION"
-
-    git push origin main --tags
+release:
+    @echo "🚀 Starting release process..."
+    @echo "📦 Merging main to release branch..."
     git checkout release
     git merge main
     git push origin release
     git checkout main
-
-    echo "✅ Release complete! Check GitHub Actions."
+    @echo ""
+    @echo "✅ Release branch updated!"
+    @echo "🔄 GitHub Actions will now:"
+    @echo "   1. Analyze commits for version bump"
+    @echo "   2. Generate release notes"
+    @echo "   3. Create tag and GitHub release"
+    @echo "   4. Update CHANGELOG.md"
+    @echo "   5. Build and upload to Chrome Web Store"
+    @echo ""
+    @echo "📊 Check progress: https://github.com/KubrickCode/github-project-status-viewer/actions"
 
 typecheck:
     cd {{ extension_dir }} && pnpm tsc --noEmit
