@@ -60,6 +60,12 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Setup pnpm
+        if: steps.check.outputs.exists == 'false'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
       - name: Install Just
         if: steps.check.outputs.exists == 'false'
         uses: extractions/setup-just@v3
