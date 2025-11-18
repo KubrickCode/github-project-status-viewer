@@ -4,7 +4,9 @@ module.exports = {
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tsconfig.spec.json',
+    }],
   },
   testMatch: ['<rootDir>/src/**/*.spec.ts'],
   collectCoverageFrom: [
