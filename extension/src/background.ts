@@ -1,3 +1,5 @@
+import { API, ERROR_MESSAGES, GRAPHQL } from "./constants/api";
+import { STORAGE_KEYS } from "./constants/storage";
 import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
 
 (() => {
@@ -35,18 +37,11 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
     }>;
   };
 
-  const API_BASE_URL = "https://github-project-status-viewer.vercel.app/api";
-  const GITHUB_API_URL = "https://api.github.com/graphql";
-  const STATUS_FIELD_NAME = "Status";
-  const ACCESS_TOKEN_KEY = "accessToken";
-  const AUTH_ERROR_MESSAGE = "Authentication required. Please log in via the extension popup.";
-  const REFRESH_TOKEN_KEY = "refreshToken";
-
   const buildQuery = (issueNumbers: number[]) => {
     const issueQueries = issueNumbers
       .map(
         (num, index) => `
-      issue${index}: issue(number: ${num}) {
+      ${GRAPHQL.ISSUE_ALIAS_PREFIX}${index}: issue(number: ${num}) {
         number
         projectItems(first: 10) {
           nodes {
@@ -102,7 +97,7 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
 
       const firstProjectItem = issue.projectItems.nodes[0];
       const statusField = firstProjectItem.fieldValues.nodes.find(
-        (node) => node.field?.name === STATUS_FIELD_NAME && node.name
+        (node) => node.field?.name === GRAPHQL.STATUS_FIELD_NAME && node.name
       );
 
       if (statusField?.name) {
@@ -119,7 +114,7 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
   type TokenError = Error & { status?: number };
 
   const getGithubAccessToken = async (accessToken: string): Promise<string> => {
-    const response = await fetch(`${API_BASE_URL}/verify`, {
+    const response = await fetch(`${API.BASE_URL}/verify`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
@@ -140,7 +135,7 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
   const refreshTokens = async (
     refreshToken: string
   ): Promise<{ accessToken: string; refreshToken: string }> => {
-    const response = await fetch(`${API_BASE_URL}/refresh`, {
+    const response = await fetch(`${API.BASE_URL}/refresh`, {
       headers: {
         Authorization: `Bearer ${refreshToken}`,
         "Content-Type": "application/json",
@@ -182,8 +177,8 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
         currentRefreshToken = tokens.refreshToken;
 
         await chrome.storage.session.set({
-          [ACCESS_TOKEN_KEY]: currentAccessToken,
-          [REFRESH_TOKEN_KEY]: currentRefreshToken,
+          [STORAGE_KEYS.ACCESS_TOKEN]: currentAccessToken,
+          [STORAGE_KEYS.REFRESH_TOKEN]: currentRefreshToken,
         });
 
         githubAccessToken = await getGithubAccessToken(currentAccessToken);
@@ -192,7 +187,7 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
       }
     }
 
-    const response = await fetch(GITHUB_API_URL, {
+    const response = await fetch(API.GITHUB.GRAPHQL_URL, {
       body: JSON.stringify({
         query,
         variables: {
@@ -224,7 +219,7 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
     }
 
     const issues: IssueNode[] = Object.entries(data.data.repository)
-      .filter(([key]) => key.startsWith("issue"))
+      .filter(([key]) => key.startsWith(GRAPHQL.ISSUE_ALIAS_PREFIX))
       .map(([, issue]) => issue as IssueNode);
 
     const issueStatusMap = buildIssueStatusMap(issues);
@@ -246,16 +241,19 @@ import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
     if (request.type !== "GET_PROJECT_STATUS") return false;
 
     try {
-      const result = await chrome.storage.session.get([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+      const result = await chrome.storage.session.get([
+        STORAGE_KEYS.ACCESS_TOKEN,
+        STORAGE_KEYS.REFRESH_TOKEN,
+      ]);
 
-      if (!result[ACCESS_TOKEN_KEY] || !result[REFRESH_TOKEN_KEY]) {
-        sendResponse({ error: AUTH_ERROR_MESSAGE });
+      if (!result[STORAGE_KEYS.ACCESS_TOKEN] || !result[STORAGE_KEYS.REFRESH_TOKEN]) {
+        sendResponse({ error: ERROR_MESSAGES.AUTH_REQUIRED });
         return true;
       }
 
       const statuses = await fetchProjectStatus(
-        result[ACCESS_TOKEN_KEY],
-        result[REFRESH_TOKEN_KEY],
+        result[STORAGE_KEYS.ACCESS_TOKEN],
+        result[STORAGE_KEYS.REFRESH_TOKEN],
         request.owner,
         request.repo,
         request.issueNumbers
