@@ -7,8 +7,8 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.ts", "test/**/*.ts"],
-    ignores: ["dist", "node_modules"],
+    files: ["src/**/*.ts"],
+    ignores: ["dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

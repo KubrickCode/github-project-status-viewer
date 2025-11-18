@@ -1,3 +1,5 @@
+import { getIssueNumbers } from "./issue-parser";
+
 (() => {
   type DisplayMode = "compact" | "full";
 
@@ -34,25 +36,6 @@
   let observer: MutationObserver | null = null;
   let pollIntervalId: ReturnType<typeof setInterval> | null = null;
   let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  const getIssueNumbers = (): number[] => {
-    const issueElements = document.querySelectorAll(ISSUE_LINK_SELECTOR);
-
-    const numbers: number[] = [];
-
-    issueElements.forEach((element) => {
-      const href = element.getAttribute("href");
-      if (href) {
-        const match = href.match(/\/issues\/(\d+)/);
-        if (match) {
-          const issueNumber = parseInt(match[1], 10);
-          numbers.push(issueNumber);
-        }
-      }
-    });
-
-    return numbers;
-  };
 
   const calculateMaxBadgeWidth = (): number => {
     const badges = document.querySelectorAll(`.${BADGE_CLASS}`);

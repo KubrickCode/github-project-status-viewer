@@ -51,6 +51,13 @@ typecheck:
 watch:
     cd {{ extension_dir }} && pnpm watch
 
+test:
+    just test-server
+    just test-extension
+
+test-extension:
+    cd {{ extension_dir }} && pnpm test
+
 test-server:
     cd {{ server_dir }} && \
     JWT_SECRET=test-secret \
