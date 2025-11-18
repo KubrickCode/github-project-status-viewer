@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -33,23 +34,16 @@ type upstashResponse struct {
 	Error  string `json:"error,omitempty"`
 }
 
-var (
-	defaultClient *Client
-	initError     error
-)
-
-func init() {
-	defaultClient, initError = NewClient()
-	if initError != nil {
-		log.Printf("Warning: Redis client initialization failed: %v", initError)
+var getClientFunc = sync.OnceValues(func() (*Client, error) {
+	client, err := NewClient()
+	if err != nil {
+		slog.Warn("Redis client initialization failed", "error", err)
 	}
-}
+	return client, err
+})
 
 func GetClient() (*Client, error) {
-	if initError != nil {
-		return nil, initError
-	}
-	return defaultClient, nil
+	return getClientFunc()
 }
 
 func NewClient() (*Client, error) {

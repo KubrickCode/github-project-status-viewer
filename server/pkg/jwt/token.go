@@ -2,7 +2,9 @@ package jwt
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,20 +31,16 @@ type Manager struct {
 	secret []byte
 }
 
-var (
-	defaultManager *Manager
-	initError      error
-)
-
-func init() {
-	defaultManager, initError = NewManager()
-}
+var getManagerFunc = sync.OnceValues(func() (*Manager, error) {
+	manager, err := NewManager()
+	if err != nil {
+		slog.Warn("JWT Manager initialization failed", "error", err)
+	}
+	return manager, err
+})
 
 func GetManager() (*Manager, error) {
-	if initError != nil {
-		return nil, initError
-	}
-	return defaultManager, nil
+	return getManagerFunc()
 }
 
 func NewManager() (*Manager, error) {
