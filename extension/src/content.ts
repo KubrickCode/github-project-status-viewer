@@ -1,6 +1,12 @@
 import { STORAGE_KEYS } from "./constants/storage";
-import { CSS_CLASSES, SELECTORS, UI_DEFAULTS, UI_TIMING, URL_PATTERNS } from "./constants/ui";
+import { CSS_CLASSES, SELECTORS, UI_TIMING, URL_PATTERNS } from "./constants/ui";
 import { getIssueNumbers } from "./issue-parser";
+import {
+  applyUniformWidth,
+  calculateMaxBadgeWidth,
+  insertBadge,
+  refreshAllBadgeDisplays,
+} from "./services/badge-renderer.service";
 import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
 (() => {
@@ -10,69 +16,17 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
   let pollIntervalId: ReturnType<typeof setInterval> | null = null;
   let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  const calculateMaxBadgeWidth = (): number => {
-    const badges = document.querySelectorAll(`.${CSS_CLASSES.BADGE}`);
-    if (badges.length === 0) return 0;
-
-    let maxWidth = 0;
-    badges.forEach((badge) => {
-      const width = (badge as HTMLElement).getBoundingClientRect().width;
-      if (width > maxWidth) {
-        maxWidth = width;
-      }
-    });
-
-    return maxWidth;
-  };
-
   const updateBadgeWidths = async () => {
     const displayMode = await getDisplayMode();
     if (displayMode === "compact") return;
 
     const maxWidth = calculateMaxBadgeWidth();
-    if (maxWidth === 0) return;
-
-    const badges = document.querySelectorAll(
-      `.${CSS_CLASSES.BADGE}:not(.${CSS_CLASSES.BADGE_COMPACT})`
-    );
-    badges.forEach((badge) => {
-      (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
-    });
-  };
-
-  const updateBadgeDisplay = async (
-    badge: HTMLElement,
-    displayMode: DisplayMode,
-    status: string
-  ) => {
-    if (displayMode === "compact") {
-      badge.classList.add(CSS_CLASSES.BADGE_COMPACT);
-      badge.textContent = "";
-      badge.title = status;
-      badge.setAttribute("role", "img");
-      badge.setAttribute("aria-label", `Status: ${status}`);
-      badge.tabIndex = 0;
-      badge.style.minWidth = "";
-    } else {
-      badge.classList.remove(CSS_CLASSES.BADGE_COMPACT);
-      badge.textContent = status;
-      badge.title = "";
-      badge.removeAttribute("role");
-      badge.removeAttribute("aria-label");
-      badge.tabIndex = -1;
-    }
+    applyUniformWidth({ maxWidth });
   };
 
   const refreshAllBadges = async () => {
     const displayMode = await getDisplayMode();
-    const badges = document.querySelectorAll(`.${CSS_CLASSES.BADGE}`);
-
-    for (const badge of Array.from(badges)) {
-      const statusText = badge.getAttribute("data-status");
-      if (statusText) {
-        await updateBadgeDisplay(badge as HTMLElement, displayMode, statusText);
-      }
-    }
+    refreshAllBadgeDisplays(displayMode);
 
     if (displayMode === "full") {
       requestAnimationFrame(() => {
@@ -89,30 +43,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
   const addStatusBadge = async (issueNumber: number, status: string, color: string | null) => {
     const displayMode = await getDisplayMode();
-    const issueLinks = document.querySelectorAll(SELECTORS.ISSUE_LINK);
-
-    for (const link of Array.from(issueLinks)) {
-      const href = link.getAttribute("href");
-      if (!href?.includes(`/issues/${issueNumber}`)) continue;
-
-      const h3Element = link.closest("h3");
-      if (!h3Element) continue;
-
-      const container = h3Element.parentElement;
-      if (!container) continue;
-
-      if (container.querySelector(`.${CSS_CLASSES.BADGE}`)) return;
-
-      const badge = document.createElement("span");
-      badge.className = CSS_CLASSES.BADGE;
-      badge.setAttribute("data-status", status);
-      badge.style.setProperty("--status-color", color || UI_DEFAULTS.BADGE_COLOR);
-
-      await updateBadgeDisplay(badge, displayMode, status);
-
-      container.insertBefore(badge, h3Element);
-      return;
-    }
+    insertBadge({ color, displayMode, issueNumber, status });
   };
 
   const parseRepoInfo = () => {

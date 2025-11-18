@@ -16,16 +16,24 @@ import { MessageRequest, MessageResponse } from "./shared/types";
         STORAGE_KEYS.REFRESH_TOKEN,
       ]);
 
-      if (!result[STORAGE_KEYS.ACCESS_TOKEN] || !result[STORAGE_KEYS.REFRESH_TOKEN]) {
+      const accessToken = result[STORAGE_KEYS.ACCESS_TOKEN];
+      const refreshToken = result[STORAGE_KEYS.REFRESH_TOKEN];
+
+      if (
+        typeof accessToken !== "string" ||
+        !accessToken ||
+        typeof refreshToken !== "string" ||
+        !refreshToken
+      ) {
         sendResponse({ error: ERROR_MESSAGES.AUTH_REQUIRED });
         return true;
       }
 
       const statuses = await fetchProjectStatus({
-        accessToken: result[STORAGE_KEYS.ACCESS_TOKEN],
+        accessToken,
         issueNumbers: request.issueNumbers,
         owner: request.owner,
-        refreshToken: result[STORAGE_KEYS.REFRESH_TOKEN],
+        refreshToken,
         repo: request.repo,
       });
 

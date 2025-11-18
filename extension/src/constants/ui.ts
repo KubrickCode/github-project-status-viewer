@@ -23,6 +23,7 @@ export const ELEMENT_IDS = {
 
 export const SELECTORS = {
   ISSUE_LINK: '[data-testid="issue-pr-title-link"]',
+  ISSUE_TITLE_CONTAINER: "h3",
 } as const;
 
 export const STATUS_ICONS = {
