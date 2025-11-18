@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -21,21 +22,16 @@ type Client struct {
 	TokenURL     string
 }
 
-var defaultClient *Client
-
-func init() {
-	var err error
-	defaultClient, err = NewClient()
+var getClientFunc = sync.OnceValues(func() (*Client, error) {
+	client, err := NewClient()
 	if err != nil {
-		log.Printf("Warning: OAuth client initialization failed: %v", err)
+		slog.Warn("OAuth client initialization failed", "error", err)
 	}
-}
+	return client, err
+})
 
 func GetClient() (*Client, error) {
-	if defaultClient == nil {
-		return nil, fmt.Errorf("OAuth configuration missing")
-	}
-	return defaultClient, nil
+	return getClientFunc()
 }
 
 func NewClient() (*Client, error) {

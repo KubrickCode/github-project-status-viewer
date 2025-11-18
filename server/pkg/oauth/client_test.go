@@ -4,9 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"sync"
 	"testing"
 	"time"
 )
+
+func resetClientForTest(t *testing.T) {
+	t.Helper()
+	originalFunc := getClientFunc
+	getClientFunc = sync.OnceValues(func() (*Client, error) {
+		return NewClient()
+	})
+	t.Cleanup(func() {
+		getClientFunc = originalFunc
+	})
+}
 
 func TestNewClient(t *testing.T) {
 	tests := []struct {
@@ -264,12 +277,10 @@ func TestGetClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			resetClientForTest(t)
+
 			t.Setenv("GITHUB_CLIENT_ID", tt.clientID)
 			t.Setenv("GITHUB_CLIENT_SECRET", tt.clientSecret)
-
-			// Re-initialize the default client
-			var err error
-			defaultClient, err = NewClient()
 
 			client, err := GetClient()
 			if (err != nil) != tt.wantErr {
@@ -357,5 +368,73 @@ func TestClient_requestToken(t *testing.T) {
 				t.Error("Expected error but got none")
 			}
 		})
+	}
+}
+
+func TestGetClient_Concurrency(t *testing.T) {
+	resetClientForTest(t)
+
+	t.Setenv("GITHUB_CLIENT_ID", "test-client-id")
+	t.Setenv("GITHUB_CLIENT_SECRET", "test-client-secret")
+
+	const numGoroutines = 100
+	var wg sync.WaitGroup
+	wg.Add(numGoroutines)
+
+	clients := make([]*Client, numGoroutines)
+	errors := make([]error, numGoroutines)
+
+	for i := range numGoroutines {
+		go func(idx int) {
+			defer wg.Done()
+			clients[idx], errors[idx] = GetClient()
+		}(i)
+	}
+
+	wg.Wait()
+
+	var firstClient *Client
+	for i := range numGoroutines {
+		if errors[i] != nil {
+			t.Errorf("goroutine %d got error: %v", i, errors[i])
+		}
+		if i == 0 {
+			firstClient = clients[i]
+		} else if clients[i] != firstClient {
+			t.Errorf("goroutine %d got different client instance", i)
+		}
+	}
+}
+
+func TestGetClient_InitializationError(t *testing.T) {
+	resetClientForTest(t)
+
+	originalID := os.Getenv("GITHUB_CLIENT_ID")
+	originalSecret := os.Getenv("GITHUB_CLIENT_SECRET")
+	t.Cleanup(func() {
+		os.Setenv("GITHUB_CLIENT_ID", originalID)
+		os.Setenv("GITHUB_CLIENT_SECRET", originalSecret)
+	})
+
+	os.Unsetenv("GITHUB_CLIENT_ID")
+	os.Unsetenv("GITHUB_CLIENT_SECRET")
+
+	client1, err1 := GetClient()
+	client2, err2 := GetClient()
+
+	if client1 != nil {
+		t.Error("Expected nil client when initialization fails")
+	}
+	if client2 != nil {
+		t.Error("Expected nil client when initialization fails")
+	}
+	if err1 == nil {
+		t.Error("Expected error when initialization fails")
+	}
+	if err2 == nil {
+		t.Error("Expected error when initialization fails")
+	}
+	if err1.Error() != err2.Error() {
+		t.Error("Expected same error message for all calls")
 	}
 }

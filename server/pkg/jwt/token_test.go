@@ -1,11 +1,24 @@
 package jwt
 
 import (
+	"os"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func resetManagerForTest(t *testing.T) {
+	t.Helper()
+	originalFunc := getManagerFunc
+	getManagerFunc = sync.OnceValues(func() (*Manager, error) {
+		return NewManager()
+	})
+	t.Cleanup(func() {
+		getManagerFunc = originalFunc
+	})
+}
 
 func TestNewManager(t *testing.T) {
 	tests := []struct {
@@ -376,10 +389,9 @@ func TestGetManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", tt.jwtSecret)
+			resetManagerForTest(t)
 
-			// Re-initialize the default manager
-			defaultManager, initError = NewManager()
+			t.Setenv("JWT_SECRET", tt.jwtSecret)
 
 			manager, err := GetManager()
 			if (err != nil) != tt.wantErr {
@@ -395,8 +407,9 @@ func TestGetManager(t *testing.T) {
 }
 
 func TestGenerateAccessToken(t *testing.T) {
+	resetManagerForTest(t)
+
 	t.Setenv("JWT_SECRET", "test-secret")
-	defaultManager, initError = NewManager()
 
 	token, err := GenerateAccessToken("test-session")
 	if err != nil {
@@ -409,8 +422,9 @@ func TestGenerateAccessToken(t *testing.T) {
 }
 
 func TestGenerateRefreshToken(t *testing.T) {
+	resetManagerForTest(t)
+
 	t.Setenv("JWT_SECRET", "test-secret")
-	defaultManager, initError = NewManager()
 
 	token, err := GenerateRefreshToken("refresh-123", "session-456")
 	if err != nil {
@@ -423,8 +437,9 @@ func TestGenerateRefreshToken(t *testing.T) {
 }
 
 func TestValidateAccessToken(t *testing.T) {
+	resetManagerForTest(t)
+
 	t.Setenv("JWT_SECRET", "test-secret")
-	defaultManager, initError = NewManager()
 
 	token, _ := GenerateAccessToken("test-session")
 	claims, err := ValidateAccessToken(token)
@@ -438,8 +453,9 @@ func TestValidateAccessToken(t *testing.T) {
 }
 
 func TestValidateRefreshToken(t *testing.T) {
+	resetManagerForTest(t)
+
 	t.Setenv("JWT_SECRET", "test-secret")
-	defaultManager, initError = NewManager()
 
 	token, _ := GenerateRefreshToken("refresh-123", "session-456")
 	claims, err := ValidateRefreshToken(token)
@@ -496,5 +512,69 @@ func TestRefreshTokenClaims_Expiration(t *testing.T) {
 	expiresIn := time.Until(claims.ExpiresAt.Time)
 	if expiresIn > RefreshTokenExpiration || expiresIn < RefreshTokenExpiration-time.Second {
 		t.Errorf("Token expiration = %v, want approximately %v", expiresIn, RefreshTokenExpiration)
+	}
+}
+
+func TestGetManager_Concurrency(t *testing.T) {
+	resetManagerForTest(t)
+
+	t.Setenv("JWT_SECRET", "test-secret-for-concurrency")
+
+	const numGoroutines = 100
+	var wg sync.WaitGroup
+	wg.Add(numGoroutines)
+
+	managers := make([]*Manager, numGoroutines)
+	errors := make([]error, numGoroutines)
+
+	for i := range numGoroutines {
+		go func(idx int) {
+			defer wg.Done()
+			managers[idx], errors[idx] = GetManager()
+		}(i)
+	}
+
+	wg.Wait()
+
+	var firstManager *Manager
+	for i := range numGoroutines {
+		if errors[i] != nil {
+			t.Errorf("goroutine %d got error: %v", i, errors[i])
+		}
+		if i == 0 {
+			firstManager = managers[i]
+		} else if managers[i] != firstManager {
+			t.Errorf("goroutine %d got different manager instance", i)
+		}
+	}
+}
+
+func TestGetManager_InitializationError(t *testing.T) {
+	resetManagerForTest(t)
+
+	originalSecret := os.Getenv("JWT_SECRET")
+	t.Cleanup(func() {
+		os.Setenv("JWT_SECRET", originalSecret)
+	})
+
+	os.Unsetenv("JWT_SECRET")
+
+	manager1, err1 := GetManager()
+	manager2, err2 := GetManager()
+
+	if manager1 != nil {
+		t.Error("Expected nil manager when initialization fails")
+	}
+	if manager2 != nil {
+		t.Error("Expected nil manager when initialization fails")
+	}
+	if err1 == nil {
+		t.Error("Expected error when initialization fails")
+	}
+	if err2 == nil {
+		t.Error("Expected error when initialization fails")
+	}
+	if err1.Error() != err2.Error() {
+		t.Error("Expected same error message for all calls")
 	}
 }
