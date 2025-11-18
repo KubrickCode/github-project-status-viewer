@@ -1,26 +1,7 @@
 import { getIssueNumbers } from "./issue-parser";
+import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
 (() => {
-  type DisplayMode = "compact" | "full";
-
-  type IssueStatus = {
-    color: string | null;
-    number: number;
-    status: string | null;
-  };
-
-  type MessageRequest = {
-    issueNumbers: number[];
-    owner: string;
-    repo: string;
-    type: "GET_PROJECT_STATUS";
-  };
-
-  type MessageResponse = {
-    error?: string;
-    statuses?: IssueStatus[];
-  };
-
   const BADGE_CLASS = "project-status-badge";
   const BADGE_COMPACT_CLASS = "project-status-badge--compact";
   const DEBOUNCE_DELAY_MS = 500;

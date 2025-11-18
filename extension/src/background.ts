@@ -1,22 +1,6 @@
+import { IssueStatus, MessageRequest, MessageResponse } from "./shared/types";
+
 (() => {
-  type IssueStatus = {
-    color: string | null;
-    number: number;
-    status: string | null;
-  };
-
-  type MessageRequest = {
-    issueNumbers: number[];
-    owner: string;
-    repo: string;
-    type: "GET_PROJECT_STATUS";
-  };
-
-  type MessageResponse = {
-    error?: string;
-    statuses?: IssueStatus[];
-  };
-
   type VerifyResponse = {
     access_token: string;
   };

@@ -1,12 +1,10 @@
+import { DisplayMode, StatusType } from "./shared/types";
+
 (() => {
   type CallbackResponse = {
     access_token: string;
     refresh_token: string;
   };
-
-  type DisplayMode = "compact" | "full";
-
-  type StatusType = "error" | "info" | "success";
 
   type UIElements = {
     displayModeSelect: HTMLSelectElement;
