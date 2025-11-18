@@ -1,17 +1,9 @@
+import { STORAGE_KEYS } from "./constants/storage";
+import { CSS_CLASSES, SELECTORS, UI_DEFAULTS, UI_TIMING, URL_PATTERNS } from "./constants/ui";
 import { getIssueNumbers } from "./issue-parser";
 import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
 (() => {
-  const BADGE_CLASS = "project-status-badge";
-  const BADGE_COMPACT_CLASS = "project-status-badge--compact";
-  const DEBOUNCE_DELAY_MS = 500;
-  const DEFAULT_BADGE_COLOR = "#6e7781";
-  const DISPLAY_MODE_KEY = "displayMode";
-  const GITHUB_ISSUES_URL_PATTERN = /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/;
-  const ISSUE_LINK_SELECTOR = '[data-testid="issue-pr-title-link"]';
-  const POLL_INTERVAL_MS = 200;
-  const POLL_TIMEOUT_MS = 5000;
-
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let isProcessing = false;
   let observer: MutationObserver | null = null;
@@ -19,7 +11,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
   let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   const calculateMaxBadgeWidth = (): number => {
-    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+    const badges = document.querySelectorAll(`.${CSS_CLASSES.BADGE}`);
     if (badges.length === 0) return 0;
 
     let maxWidth = 0;
@@ -40,7 +32,9 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     const maxWidth = calculateMaxBadgeWidth();
     if (maxWidth === 0) return;
 
-    const badges = document.querySelectorAll(`.${BADGE_CLASS}:not(.${BADGE_COMPACT_CLASS})`);
+    const badges = document.querySelectorAll(
+      `.${CSS_CLASSES.BADGE}:not(.${CSS_CLASSES.BADGE_COMPACT})`
+    );
     badges.forEach((badge) => {
       (badge as HTMLElement).style.minWidth = `${maxWidth}px`;
     });
@@ -52,7 +46,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     status: string
   ) => {
     if (displayMode === "compact") {
-      badge.classList.add(BADGE_COMPACT_CLASS);
+      badge.classList.add(CSS_CLASSES.BADGE_COMPACT);
       badge.textContent = "";
       badge.title = status;
       badge.setAttribute("role", "img");
@@ -60,7 +54,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
       badge.tabIndex = 0;
       badge.style.minWidth = "";
     } else {
-      badge.classList.remove(BADGE_COMPACT_CLASS);
+      badge.classList.remove(CSS_CLASSES.BADGE_COMPACT);
       badge.textContent = status;
       badge.title = "";
       badge.removeAttribute("role");
@@ -71,7 +65,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
   const refreshAllBadges = async () => {
     const displayMode = await getDisplayMode();
-    const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+    const badges = document.querySelectorAll(`.${CSS_CLASSES.BADGE}`);
 
     for (const badge of Array.from(badges)) {
       const statusText = badge.getAttribute("data-status");
@@ -88,14 +82,14 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
   };
 
   const getDisplayMode = async (): Promise<DisplayMode> => {
-    const result = await chrome.storage.sync.get([DISPLAY_MODE_KEY]);
-    const value = result[DISPLAY_MODE_KEY];
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.DISPLAY_MODE]);
+    const value = result[STORAGE_KEYS.DISPLAY_MODE];
     return value === "compact" ? "compact" : "full";
   };
 
   const addStatusBadge = async (issueNumber: number, status: string, color: string | null) => {
     const displayMode = await getDisplayMode();
-    const issueLinks = document.querySelectorAll(ISSUE_LINK_SELECTOR);
+    const issueLinks = document.querySelectorAll(SELECTORS.ISSUE_LINK);
 
     for (const link of Array.from(issueLinks)) {
       const href = link.getAttribute("href");
@@ -107,12 +101,12 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
       const container = h3Element.parentElement;
       if (!container) continue;
 
-      if (container.querySelector(`.${BADGE_CLASS}`)) return;
+      if (container.querySelector(`.${CSS_CLASSES.BADGE}`)) return;
 
       const badge = document.createElement("span");
-      badge.className = BADGE_CLASS;
+      badge.className = CSS_CLASSES.BADGE;
       badge.setAttribute("data-status", status);
-      badge.style.setProperty("--status-color", color || DEFAULT_BADGE_COLOR);
+      badge.style.setProperty("--status-color", color || UI_DEFAULTS.BADGE_COLOR);
 
       await updateBadgeDisplay(badge, displayMode, status);
 
@@ -122,7 +116,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
   };
 
   const parseRepoInfo = () => {
-    const match = window.location.pathname.match(/^\/([^/]+)\/([^/]+)\/issues/);
+    const match = window.location.pathname.match(URL_PATTERNS.REPO_PATH);
     if (!match) return null;
 
     return {
@@ -180,7 +174,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
       debounceTimer = setTimeout(() => {
         updateIssueStatuses();
-      }, DEBOUNCE_DELAY_MS);
+      }, UI_TIMING.DEBOUNCE_DELAY);
     });
 
     observer.observe(document.body, {
@@ -195,7 +189,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
   };
 
   const init = () => {
-    if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
+    if (!window.location.href.match(URL_PATTERNS.GITHUB_ISSUES)) return;
 
     run();
   };
@@ -227,16 +221,16 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     cleanupObserver();
     cleanupPollingTimers();
 
-    if (!window.location.href.match(GITHUB_ISSUES_URL_PATTERN)) return;
+    if (!window.location.href.match(URL_PATTERNS.GITHUB_ISSUES)) return;
 
     pollIntervalId = setInterval(() => {
-      if (document.querySelector(ISSUE_LINK_SELECTOR)) {
+      if (document.querySelector(SELECTORS.ISSUE_LINK)) {
         cleanupPollingTimers();
         run();
       }
-    }, POLL_INTERVAL_MS);
+    }, UI_TIMING.POLL_INTERVAL);
 
-    pollTimeoutId = setTimeout(cleanupPollingTimers, POLL_TIMEOUT_MS);
+    pollTimeoutId = setTimeout(cleanupPollingTimers, UI_TIMING.POLL_TIMEOUT);
   };
 
   if (document.readyState === "loading") {
@@ -247,7 +241,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "RELOAD_BADGES") {
-      const badges = document.querySelectorAll(`.${BADGE_CLASS}`);
+      const badges = document.querySelectorAll(`.${CSS_CLASSES.BADGE}`);
       if (badges.length > 0) {
         refreshAllBadges();
       } else {

@@ -1,3 +1,6 @@
+import { API } from "./constants/api";
+import { STORAGE_KEYS } from "./constants/storage";
+import { CSS_CLASSES, ELEMENT_IDS, STATUS_ICONS, UI_TIMING } from "./constants/ui";
 import { DisplayMode, StatusType } from "./shared/types";
 
 (() => {
@@ -18,40 +21,6 @@ import { DisplayMode, StatusType } from "./shared/types";
     statusMessage: HTMLSpanElement;
   };
 
-  const ACCESS_TOKEN_KEY = "accessToken";
-  const API_BASE_URL = "https://github-project-status-viewer.vercel.app/api";
-  const CSS_CLASS = {
-    ACTIVE: "popup__section--active",
-    LOADING: "popup__btn--loading",
-    SUCCESS_PULSE: "popup__user-info--success",
-    VISIBLE: "popup__status--visible",
-  } as const;
-  const DISPLAY_MODE_KEY = "displayMode";
-  const ELEMENT_ID = {
-    DISPLAY_MODE: "displayMode",
-    LOGGED_IN_SECTION: "loggedInSection",
-    LOGIN_BTN: "loginBtn",
-    LOGIN_SECTION: "loginSection",
-    LOGOUT_BTN: "logoutBtn",
-    STATUS: "status",
-    STATUS_CLOSE: "statusClose",
-    STATUS_ICON_PATH: "statusIconPath",
-    STATUS_MESSAGE: "statusMessage",
-  } as const;
-  const GITHUB_CLIENT_ID = "Ov23liFFkeCk13ofhM7c";
-  const GITHUB_OAUTH_URL = "https://github.com/login/oauth/authorize";
-  const OAUTH_SCOPE_STRING = "repo read:project";
-  const OAUTH_STATE_KEY = "oauthState";
-  const REFRESH_TOKEN_KEY = "refreshToken";
-  const STATUS_DISPLAY_DURATION = 3000;
-  const STATUS_ICON_PATH = {
-    error:
-      "M2.343 13.657A8 8 0 1 1 13.658 2.343 8 8 0 0 1 2.343 13.657ZM6.03 4.97a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042L6.94 8 4.97 9.97a.749.749 0 0 0 .326 1.275.749.749 0 0 0 .734-.215L8 9.06l1.97 1.97a.749.749 0 0 0 1.275-.326.749.749 0 0 0-.215-.734L9.06 8l1.97-1.97a.749.749 0 0 0-.326-1.275.749.749 0 0 0-.734.215L8 6.94Z",
-    info: "M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z",
-    success:
-      "M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm9.78-2.22-5.5 5.5a.75.75 0 0 1-1.06 0l-2.5-2.5a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L5.75 9.19l4.97-4.97a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z",
-  } as const;
-
   let statusHideTimer: ReturnType<typeof setTimeout> | null = null;
 
   const generateState = (): string => {
@@ -70,25 +39,25 @@ import { DisplayMode, StatusType } from "./shared/types";
     };
 
     return {
-      displayModeSelect: getElement<HTMLSelectElement>(ELEMENT_ID.DISPLAY_MODE),
-      loggedInSection: getElement<HTMLElement>(ELEMENT_ID.LOGGED_IN_SECTION),
-      loginBtn: getElement<HTMLButtonElement>(ELEMENT_ID.LOGIN_BTN),
-      loginSection: getElement<HTMLElement>(ELEMENT_ID.LOGIN_SECTION),
-      logoutBtn: getElement<HTMLButtonElement>(ELEMENT_ID.LOGOUT_BTN),
-      statusClose: getElement<HTMLButtonElement>(ELEMENT_ID.STATUS_CLOSE),
-      statusDiv: getElement<HTMLDivElement>(ELEMENT_ID.STATUS),
-      statusIconPath: getElement<SVGPathElement>(ELEMENT_ID.STATUS_ICON_PATH),
-      statusMessage: getElement<HTMLSpanElement>(ELEMENT_ID.STATUS_MESSAGE),
+      displayModeSelect: getElement<HTMLSelectElement>(ELEMENT_IDS.DISPLAY_MODE),
+      loggedInSection: getElement<HTMLElement>(ELEMENT_IDS.LOGGED_IN_SECTION),
+      loginBtn: getElement<HTMLButtonElement>(ELEMENT_IDS.LOGIN_BTN),
+      loginSection: getElement<HTMLElement>(ELEMENT_IDS.LOGIN_SECTION),
+      logoutBtn: getElement<HTMLButtonElement>(ELEMENT_IDS.LOGOUT_BTN),
+      statusClose: getElement<HTMLButtonElement>(ELEMENT_IDS.STATUS_CLOSE),
+      statusDiv: getElement<HTMLDivElement>(ELEMENT_IDS.STATUS),
+      statusIconPath: getElement<SVGPathElement>(ELEMENT_IDS.STATUS_ICON_PATH),
+      statusMessage: getElement<HTMLSpanElement>(ELEMENT_IDS.STATUS_MESSAGE),
     };
   };
 
   const setButtonLoading = (button: HTMLButtonElement, loading: boolean) => {
     button.disabled = loading;
     if (loading) {
-      button.classList.add(CSS_CLASS.LOADING);
+      button.classList.add(CSS_CLASSES.POPUP.LOADING);
       button.setAttribute("aria-busy", "true");
     } else {
-      button.classList.remove(CSS_CLASS.LOADING);
+      button.classList.remove(CSS_CLASSES.POPUP.LOADING);
       button.removeAttribute("aria-busy");
     }
   };
@@ -102,17 +71,17 @@ import { DisplayMode, StatusType } from "./shared/types";
     }
 
     statusMessage.textContent = message;
-    statusIconPath.setAttribute("d", STATUS_ICON_PATH[type]);
-    statusDiv.className = `popup__status popup__status--${type} ${CSS_CLASS.VISIBLE}`;
+    statusIconPath.setAttribute("d", STATUS_ICONS[type]);
+    statusDiv.className = `popup__status popup__status--${type} ${CSS_CLASSES.POPUP.VISIBLE}`;
 
     statusHideTimer = setTimeout(() => {
       hideStatus(elements);
-    }, STATUS_DISPLAY_DURATION);
+    }, UI_TIMING.STATUS_DISPLAY_DURATION);
   };
 
   const hideStatus = (elements: UIElements) => {
     const { statusDiv } = elements;
-    statusDiv.classList.remove(CSS_CLASS.VISIBLE);
+    statusDiv.classList.remove(CSS_CLASSES.POPUP.VISIBLE);
 
     if (statusHideTimer) {
       clearTimeout(statusHideTimer);
@@ -121,15 +90,18 @@ import { DisplayMode, StatusType } from "./shared/types";
   };
 
   const checkAuthStatus = async (): Promise<boolean> => {
-    const result = await chrome.storage.session.get([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
-    return !!(result[ACCESS_TOKEN_KEY] && result[REFRESH_TOKEN_KEY]);
+    const result = await chrome.storage.session.get([
+      STORAGE_KEYS.ACCESS_TOKEN,
+      STORAGE_KEYS.REFRESH_TOKEN,
+    ]);
+    return !!(result[STORAGE_KEYS.ACCESS_TOKEN] && result[STORAGE_KEYS.REFRESH_TOKEN]);
   };
 
   const addSuccessPulse = (element: HTMLElement) => {
-    element.classList.add(CSS_CLASS.SUCCESS_PULSE);
+    element.classList.add(CSS_CLASSES.POPUP.SUCCESS_PULSE);
     setTimeout(() => {
-      element.classList.remove(CSS_CLASS.SUCCESS_PULSE);
-    }, 500);
+      element.classList.remove(CSS_CLASSES.POPUP.SUCCESS_PULSE);
+    }, UI_TIMING.SUCCESS_PULSE_DURATION);
   };
 
   const updateUI = async (elements: UIElements, showPulse = false) => {
@@ -137,8 +109,8 @@ import { DisplayMode, StatusType } from "./shared/types";
     const isLoggedIn = await checkAuthStatus();
 
     if (isLoggedIn) {
-      loginSection.classList.remove(CSS_CLASS.ACTIVE);
-      loggedInSection.classList.add(CSS_CLASS.ACTIVE);
+      loginSection.classList.remove(CSS_CLASSES.POPUP.ACTIVE);
+      loggedInSection.classList.add(CSS_CLASSES.POPUP.ACTIVE);
 
       if (showPulse) {
         const userInfo = loggedInSection.querySelector(".popup__user-info");
@@ -147,8 +119,8 @@ import { DisplayMode, StatusType } from "./shared/types";
         }
       }
     } else {
-      loginSection.classList.add(CSS_CLASS.ACTIVE);
-      loggedInSection.classList.remove(CSS_CLASS.ACTIVE);
+      loginSection.classList.add(CSS_CLASSES.POPUP.ACTIVE);
+      loggedInSection.classList.remove(CSS_CLASSES.POPUP.ACTIVE);
     }
   };
 
@@ -161,11 +133,11 @@ import { DisplayMode, StatusType } from "./shared/types";
       const state = generateState();
       const redirectUri = chrome.identity.getRedirectURL();
 
-      await chrome.storage.session.set({ [OAUTH_STATE_KEY]: state });
+      await chrome.storage.session.set({ [STORAGE_KEYS.OAUTH_STATE]: state });
 
-      const authUrl = `${GITHUB_OAUTH_URL}?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      const authUrl = `${API.GITHUB.OAUTH_URL}?client_id=${API.GITHUB.CLIENT_ID}&redirect_uri=${encodeURIComponent(
         redirectUri
-      )}&scope=${OAUTH_SCOPE_STRING}&state=${state}`;
+      )}&scope=${API.GITHUB.SCOPE}&state=${state}`;
 
       showStatus(elements, "Opening GitHub login...", "info");
 
@@ -188,8 +160,8 @@ import { DisplayMode, StatusType } from "./shared/types";
         return;
       }
 
-      const { [OAUTH_STATE_KEY]: storedState } = await chrome.storage.session.get([
-        OAUTH_STATE_KEY,
+      const { [STORAGE_KEYS.OAUTH_STATE]: storedState } = await chrome.storage.session.get([
+        STORAGE_KEYS.OAUTH_STATE,
       ]);
 
       if (returnedState !== storedState) {
@@ -197,9 +169,9 @@ import { DisplayMode, StatusType } from "./shared/types";
         return;
       }
 
-      await chrome.storage.session.remove([OAUTH_STATE_KEY]);
+      await chrome.storage.session.remove([STORAGE_KEYS.OAUTH_STATE]);
 
-      const callbackUrl = `${API_BASE_URL}/callback?code=${code}&state=${returnedState}`;
+      const callbackUrl = `${API.BASE_URL}/callback?code=${code}&state=${returnedState}`;
       const response = await fetch(callbackUrl);
 
       if (!response.ok) {
@@ -209,8 +181,8 @@ import { DisplayMode, StatusType } from "./shared/types";
       const data: CallbackResponse = await response.json();
 
       await chrome.storage.session.set({
-        [ACCESS_TOKEN_KEY]: data.access_token,
-        [REFRESH_TOKEN_KEY]: data.refresh_token,
+        [STORAGE_KEYS.ACCESS_TOKEN]: data.access_token,
+        [STORAGE_KEYS.REFRESH_TOKEN]: data.refresh_token,
       });
 
       showStatus(elements, "Successfully connected to GitHub!", "success");
@@ -237,7 +209,7 @@ import { DisplayMode, StatusType } from "./shared/types";
     setButtonLoading(logoutBtn, true);
 
     try {
-      await chrome.storage.session.remove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+      await chrome.storage.session.remove([STORAGE_KEYS.ACCESS_TOKEN, STORAGE_KEYS.REFRESH_TOKEN]);
       showStatus(elements, "Signed out successfully", "success");
       await updateUI(elements);
     } catch {
@@ -249,14 +221,14 @@ import { DisplayMode, StatusType } from "./shared/types";
 
   const loadDisplayMode = async (elements: UIElements) => {
     const { displayModeSelect } = elements;
-    const result = await chrome.storage.sync.get([DISPLAY_MODE_KEY]);
-    const value = result[DISPLAY_MODE_KEY];
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.DISPLAY_MODE]);
+    const value = result[STORAGE_KEYS.DISPLAY_MODE];
     const mode = value === "compact" ? "compact" : "full";
     displayModeSelect.value = mode;
   };
 
   const handleDisplayModeChange = async (elements: UIElements, mode: DisplayMode) => {
-    await chrome.storage.sync.set({ [DISPLAY_MODE_KEY]: mode });
+    await chrome.storage.sync.set({ [STORAGE_KEYS.DISPLAY_MODE]: mode });
 
     const [tab] = await chrome.tabs.query({
       active: true,
