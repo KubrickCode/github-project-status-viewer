@@ -1,29 +1,18 @@
 package handler
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"net/http"
 
+	"github-project-status-viewer-server/pkg/crypto"
 	"github-project-status-viewer-server/pkg/httputil"
 	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
 	"github-project-status-viewer-server/pkg/redis"
 )
 
-const refreshTokenIDBytes = 32
-
 type RefreshResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-}
-
-func generateRefreshTokenID() (string, error) {
-	bytes := make([]byte, refreshTokenIDBytes)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +72,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newRefreshTokenID, err := generateRefreshTokenID()
+	newRefreshTokenID, err := crypto.GenerateRefreshTokenID()
 	if err != nil {
 		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token ID")
 		return
