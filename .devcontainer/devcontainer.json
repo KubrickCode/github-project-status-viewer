@@ -5,6 +5,7 @@
   "workspaceFolder": "/workspaces/github-project-status-viewer",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
     "./local-features/go": {},
     "./local-features/just": {},
     "./local-features/node": {}
