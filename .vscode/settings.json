@@ -101,7 +101,7 @@
       "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
       "terminalName": "Claude Yolo",
       "useVsCodeApi": false
-    },
+    }
   ],
   "quickCommandButtons.refreshButton": {
     "icon": "$(refresh)",
