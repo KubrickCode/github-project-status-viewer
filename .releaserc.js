@@ -122,13 +122,14 @@ export default {
     [
       "@semantic-release/exec",
       {
-        prepareCmd: "just lint config",
+        prepareCmd:
+          'node -e "const fs = require(\'fs\'); const m = JSON.parse(fs.readFileSync(\'extension/public/manifest.json\')); m.version = \'${nextRelease.version}\'; fs.writeFileSync(\'extension/public/manifest.json\', JSON.stringify(m, null, 2) + \'\\n\');" && just lint config',
       },
     ],
     [
       "@semantic-release/git",
       {
-        assets: ["package.json", "CHANGELOG.md"],
+        assets: ["package.json", "CHANGELOG.md", "extension/public/manifest.json"],
         message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
     ],
