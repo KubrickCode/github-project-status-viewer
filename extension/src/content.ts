@@ -1,12 +1,12 @@
 import { STORAGE_KEYS } from "./constants/storage";
 import { CSS_CLASSES, SELECTORS, UI_TIMING, URL_PATTERNS } from "./constants/ui";
-import { getIssueNumbers } from "./issue-parser";
 import {
   applyUniformWidth,
   calculateMaxBadgeWidth,
   insertBadge,
   refreshAllBadgeDisplays,
 } from "./services/badge-renderer.service";
+import { extractIssueNumbers, parseRepositoryInfo } from "./services/dom-parser.service";
 import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
 (() => {
@@ -46,21 +46,11 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     insertBadge({ color, displayMode, issueNumber, status });
   };
 
-  const parseRepoInfo = () => {
-    const match = window.location.pathname.match(URL_PATTERNS.REPO_PATH);
-    if (!match) return null;
-
-    return {
-      owner: match[1],
-      repo: match[2],
-    };
-  };
-
   const updateIssueStatuses = async () => {
-    const repoInfo = parseRepoInfo();
+    const repoInfo = parseRepositoryInfo();
     if (!repoInfo) return;
 
-    const issueNumbers = getIssueNumbers();
+    const issueNumbers = extractIssueNumbers();
     if (issueNumbers.length === 0) return;
 
     if (isProcessing) return;
