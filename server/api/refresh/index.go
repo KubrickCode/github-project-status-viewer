@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github-project-status-viewer-server/pkg/crypto"
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 	"github-project-status-viewer-server/pkg/httputil"
 	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
@@ -43,7 +45,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	storedSessionID, err := redisClient.Get(redis.RefreshTokenKeyPrefix + claims.RefreshTokenID)
 	if err != nil {
-		if err == redis.ErrKeyNotFound {
+		if errors.Is(err, pkgerrors.ErrKeyNotFound) {
 			httputil.WriteError(w, http.StatusUnauthorized, "refresh_token_revoked", "Refresh token has been revoked or expired")
 		} else {
 			httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to verify refresh token")

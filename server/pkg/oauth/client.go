@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 )
 
 const githubTokenURL = "https://github.com/login/oauth/access_token"
@@ -39,7 +41,7 @@ func NewClient() (*Client, error) {
 	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
 
 	if clientID == "" || clientSecret == "" {
-		return nil, fmt.Errorf("OAuth configuration missing")
+		return nil, pkgerrors.ErrOAuthConfigMissing
 	}
 
 	return &Client{
@@ -84,26 +86,26 @@ func (c *Client) requestToken(data url.Values) (*TokenResponse, error) {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return nil, fmt.Errorf("%w: %w", pkgerrors.ErrOAuthRequestFailed, err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, fmt.Errorf("failed to read OAuth response: %w", err)
 	}
 
 	var tokenResp GitHubTokenResponse
 	if err := json.Unmarshal(body, &tokenResp); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
+		return nil, fmt.Errorf("failed to parse OAuth response: %w", err)
 	}
 
 	if tokenResp.AccessToken == "" {
 		var errResp GitHubErrorResponse
 		if err := json.Unmarshal(body, &errResp); err == nil && errResp.Error != "" {
-			return nil, fmt.Errorf("authentication failed: %s - %s", errResp.Error, errResp.ErrorDescription)
+			return nil, fmt.Errorf("%w: %s - %s", pkgerrors.ErrAuthenticationFailed, errResp.Error, errResp.ErrorDescription)
 		}
-		return nil, fmt.Errorf("authentication failed and could not parse error response from GitHub")
+		return nil, fmt.Errorf("%w: could not parse error response from GitHub", pkgerrors.ErrAuthenticationFailed)
 	}
 
 	return &TokenResponse{

@@ -1,7 +1,7 @@
 package auth
 
-import "errors"
+import pkgerrors "github-project-status-viewer-server/pkg/errors"
 
 var (
-	ErrInvalidAuthHeader = errors.New("authorization header must be 'Bearer <token>'")
+	ErrInvalidAuthHeader = pkgerrors.ErrInvalidAuthHeader
 )
