@@ -39,6 +39,16 @@ export const UI_DEFAULTS = {
   DISPLAY_MODE: "full" as const,
 } as const;
 
+export const UI_MESSAGES = {
+  AUTH: {
+    LOGIN_ERROR_FALLBACK: "Login failed. Please try again.",
+    LOGIN_IN_PROGRESS: "Opening GitHub login...",
+    LOGIN_SUCCESS: "Successfully connected to GitHub!",
+    LOGOUT_ERROR: "Sign out failed. Please try again.",
+    LOGOUT_SUCCESS: "Signed out successfully",
+  },
+} as const;
+
 export const UI_TIMING = {
   DEBOUNCE_DELAY: 500,
   POLL_INTERVAL: 200,
