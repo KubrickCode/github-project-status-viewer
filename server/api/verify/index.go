@@ -31,22 +31,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	accessToken := tokenString[7:]
 	claims, err := jwt.ValidateAccessToken(accessToken)
 	if err != nil {
-		httputil.WriteError(w, http.StatusUnauthorized, "invalid_access_token", err.Error())
+		httputil.WriteErrorWithLog(w, err, http.StatusUnauthorized, "invalid_access_token", "Invalid or expired access token")
 		return
 	}
 
 	redisClient, err := redis.GetClient()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Redis connection failed")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Storage service unavailable")
 		return
 	}
 
 	githubAccessToken, err := redisClient.Get(redis.SessionKeyPrefix + claims.SessionID)
 	if err != nil {
 		if errors.Is(err, pkgerrors.ErrKeyNotFound) {
-			httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
+			httputil.WriteErrorWithLog(w, pkgerrors.ErrSessionNotFound, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
 		} else {
-			httputil.WriteError(w, http.StatusInternalServerError, "redis_error", "Failed to retrieve session")
+			httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to retrieve session")
 		}
 		return
 	}

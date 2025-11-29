@@ -42,53 +42,53 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	oauthClient, err := oauth.GetClient()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "OAuth configuration missing")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "OAuth service unavailable")
 		return
 	}
 
 	token, err := oauthClient.ExchangeCode(code)
 	if err != nil {
-		httputil.WriteError(w, http.StatusBadRequest, "exchange_failed", "Failed to exchange authorization code")
+		httputil.WriteErrorWithLog(w, err, http.StatusBadRequest, "exchange_failed", "Failed to exchange authorization code")
 		return
 	}
 
 	redisClient, err := redis.GetClient()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Redis connection failed")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Storage service unavailable")
 		return
 	}
 
 	sessionID, err := crypto.GenerateSessionID()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate session ID")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create session")
 		return
 	}
 
 	if err := redisClient.Set(redis.SessionKeyPrefix+sessionID, token.AccessToken, redis.SessionTTL); err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store session")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to store session")
 		return
 	}
 
 	refreshTokenID, err := crypto.GenerateRefreshTokenID()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token ID")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create session")
 		return
 	}
 
 	if err := redisClient.Set(redis.RefreshTokenKeyPrefix+refreshTokenID, sessionID, redis.RefreshTokenTTL); err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store refresh token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to store session")
 		return
 	}
 
 	accessToken, err := jwt.GenerateAccessToken(sessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate access token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create access token")
 		return
 	}
 
 	refreshToken, err := jwt.GenerateRefreshToken(refreshTokenID, sessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create refresh token")
 		return
 	}
 
