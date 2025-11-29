@@ -3,7 +3,6 @@ package redis
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 )
 
 const (
@@ -20,8 +21,6 @@ const (
 	SessionTTL            = 30 * 24 * time.Hour
 	defaultTimeout        = 10 * time.Second
 )
-
-var ErrKeyNotFound = errors.New("key not found")
 
 type Client struct {
 	baseURL string
@@ -51,7 +50,7 @@ func NewClient() (*Client, error) {
 	token := os.Getenv("KV_REST_API_TOKEN")
 
 	if baseURL == "" || token == "" {
-		return nil, fmt.Errorf("upstash redis configuration missing")
+		return nil, pkgerrors.ErrRedisConfigMissing
 	}
 
 	return &Client{
@@ -74,16 +73,16 @@ func (c *Client) Set(key string, value string, expiration time.Duration) error {
 func (c *Client) Get(key string) (string, error) {
 	result, err := c.execute([]any{"GET", key})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("redis get operation failed: %w", err)
 	}
 
 	if result == nil {
-		return "", ErrKeyNotFound
+		return "", pkgerrors.ErrKeyNotFound
 	}
 
 	str, ok := result.(string)
 	if !ok {
-		return "", fmt.Errorf("unexpected response type")
+		return "", fmt.Errorf("%w: expected string, got %T", pkgerrors.ErrUnexpectedResponse, result)
 	}
 
 	return str, nil
@@ -97,12 +96,12 @@ func (c *Client) Delete(key string) error {
 func (c *Client) Exists(key string) (bool, error) {
 	result, err := c.execute([]any{"EXISTS", key})
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("redis exists operation failed: %w", err)
 	}
 
 	count, ok := result.(float64)
 	if !ok {
-		return false, fmt.Errorf("unexpected response type")
+		return false, fmt.Errorf("%w: expected float64, got %T", pkgerrors.ErrUnexpectedResponse, result)
 	}
 
 	return count > 0, nil
@@ -131,14 +130,14 @@ func (c *Client) execute(cmd []any) (any, error) {
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("redis request failed with status %d (failed to read error body: %w)", resp.StatusCode, err)
+			return nil, fmt.Errorf("%w: status %d (failed to read error body: %w)", pkgerrors.ErrRedisRequestFailed, resp.StatusCode, err)
 		}
-		return nil, fmt.Errorf("redis request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+		return nil, fmt.Errorf("%w: status %d: %s", pkgerrors.ErrRedisRequestFailed, resp.StatusCode, string(bodyBytes))
 	}
 
 	var response upstashResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+		return nil, fmt.Errorf("failed to decode redis response: %w", err)
 	}
 
 	if response.Error != "" {

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 )
 
 const (
@@ -46,7 +48,7 @@ func GetManager() (*Manager, error) {
 func NewManager() (*Manager, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		return nil, fmt.Errorf("JWT_SECRET not configured")
+		return nil, pkgerrors.ErrJWTSecretMissing
 	}
 	return &Manager{secret: []byte(secret)}, nil
 }
@@ -83,7 +85,7 @@ func (m *Manager) GenerateRefreshToken(refreshTokenID, sessionID string) (string
 func (m *Manager) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("%w: %v", pkgerrors.ErrInvalidSigningMethod, token.Header["alg"])
 		}
 		return m.secret, nil
 	})
@@ -94,7 +96,7 @@ func (m *Manager) ValidateAccessToken(tokenString string) (*AccessTokenClaims, e
 
 	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok {
-		return nil, fmt.Errorf("invalid access token claims type")
+		return nil, pkgerrors.ErrInvalidAccessTokenClaims
 	}
 
 	return claims, nil
@@ -103,7 +105,7 @@ func (m *Manager) ValidateAccessToken(tokenString string) (*AccessTokenClaims, e
 func (m *Manager) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("%w: %v", pkgerrors.ErrInvalidSigningMethod, token.Header["alg"])
 		}
 		return m.secret, nil
 	})
@@ -114,7 +116,7 @@ func (m *Manager) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims,
 
 	claims, ok := token.Claims.(*RefreshTokenClaims)
 	if !ok {
-		return nil, fmt.Errorf("invalid refresh token claims type")
+		return nil, pkgerrors.ErrInvalidRefreshTokenClaims
 	}
 
 	return claims, nil

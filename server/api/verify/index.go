@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 	"github-project-status-viewer-server/pkg/httputil"
 	"github-project-status-viewer-server/pkg/jwt"
 	"github-project-status-viewer-server/pkg/oauth"
@@ -42,7 +43,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	githubAccessToken, err := redisClient.Get(redis.SessionKeyPrefix + claims.SessionID)
 	if err != nil {
-		if errors.Is(err, redis.ErrKeyNotFound) {
+		if errors.Is(err, pkgerrors.ErrKeyNotFound) {
 			httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
 		} else {
 			httputil.WriteError(w, http.StatusInternalServerError, "redis_error", "Failed to retrieve session")

@@ -3,6 +3,9 @@ package crypto
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+
+	pkgerrors "github-project-status-viewer-server/pkg/errors"
 )
 
 const (
@@ -13,7 +16,7 @@ const (
 func generateRandomHex(byteLength int) (string, error) {
 	bytes := make([]byte, byteLength)
 	if _, err := rand.Read(bytes); err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %w", pkgerrors.ErrRandomGeneration, err)
 	}
 	return hex.EncodeToString(bytes), nil
 }
