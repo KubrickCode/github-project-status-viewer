@@ -59,5 +59,6 @@ export const UI_TIMING = {
 
 export const URL_PATTERNS = {
   GITHUB_ISSUES: /https:\/\/github\.com\/[^/]+\/[^/]+\/issues/,
+  ISSUE_NUMBER: /\/issues\/(\d+)/,
   REPO_PATH: /^\/([^/]+)\/([^/]+)\/issues/,
 } as const;
