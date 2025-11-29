@@ -1,3 +1,54 @@
+## 🎯 Highlights
+
+### 🐛 Bug Fixes
+
+- **release:** breaking change commits not triggering major version bump ([01a54e8fe1952c248bdf8cd3244a64e040fb68cb](/commit/01a54e8fe1952c248bdf8cd3244a64e040fb68cb))
+
+## 🔧 Maintenance
+
+### 📚 Documentation
+
+- Remove subagent assignment model ([c7192f22b4b67b90a2a401feb4c321f34182f58c](/commit/c7192f22b4b67b90a2a401feb4c321f34182f58c))
+- sync ai documentation from the ai-config-toolkit repository ([c753415b0a4c018892e101bf0e887e20560eadb5](/commit/c753415b0a4c018892e101bf0e887e20560eadb5))
+- synchronizing documentation from the ai-config-toolkit repository ([62646ed9f7ee30a350d3e15347f51f0081e978c7](/commit/62646ed9f7ee30a350d3e15347f51f0081e978c7))
+- synchronizing documentation from the ai-config-toolkit repository ([f9575c484ed1461bd03c211c5c6affe4589a6230](/commit/f9575c484ed1461bd03c211c5c6affe4589a6230))
+- Synchronizing documentation from the ai-config-toolkit repository ([019f8749c87891708eef07854b529531036b4c01](/commit/019f8749c87891708eef07854b529531036b4c01))
+- Update docs ([6619cf8e45df86d4b3bff01eea3ef4d0401085d5](/commit/6619cf8e45df86d4b3bff01eea3ef4d0401085d5))
+
+### 💄 Styles
+
+- format code ([86b83df00563705e43d0f9537013cd7a19a8e989](/commit/86b83df00563705e43d0f9537013cd7a19a8e989))
+- format docs ([754f4a22ed1f48a6ed8f8a37ca8babad623e33f7](/commit/754f4a22ed1f48a6ed8f8a37ca8babad623e33f7))
+
+### ♻️ Refactoring
+
+- extract badge rendering logic to standalone service ([718cf91b01a0268ea102289dbacdecb771cea0a5](/commit/718cf91b01a0268ea102289dbacdecb771cea0a5))
+- extract DOM parsing logic into dedicated service ([42d1b41b32db0fdf0e95915023883c929584f27d](/commit/42d1b41b32db0fdf0e95915023883c929584f27d))
+- extract duplicate crypto random generation logic to centralized utilities ([91a56a0bf1212d8b99e8a5c4054b85a1a1c6d303](/commit/91a56a0bf1212d8b99e8a5c4054b85a1a1c6d303))
+- extract duplicate TypeScript type definitions ([ebf851d116a6496593db12fa5799bc15a97f7858](/commit/ebf851d116a6496593db12fa5799bc15a97f7858))
+- extract GitHub API service layer with tests ([cab83c0088d65a5536657e4fcaf6a3880618b5aa](/commit/cab83c0088d65a5536657e4fcaf6a3880618b5aa))
+- extract hardcoded strings to centralized constant modules ([08d73fc15db19b4d6c59b6a8f0c46f96ca9b4e3c](/commit/08d73fc15db19b4d6c59b6a8f0c46f96ca9b4e3c))
+- extract OAuth authentication logic into dedicated service ([c524b2ea7de3f896928cefad52381d3ac00693bf](/commit/c524b2ea7de3f896928cefad52381d3ac00693bf))
+- prevent internal error exposure in API responses ([56a9a7f1ce2101a7f42f71cd426c5cba0f7584cc](/commit/56a9a7f1ce2101a7f42f71cd426c5cba0f7584cc))
+- replace init() pattern with sync.OnceValues for predictable initialization ([e6275d2a8083f90e038aacd97b1532969a938cde](/commit/e6275d2a8083f90e038aacd97b1532969a938cde))
+- standardize Go error handling with error chain support ([e2c2165c358ca8c89616b2ca04908b08eab15e02](/commit/e2c2165c358ca8c89616b2ca04908b08eab15e02))
+- Switch to using reusable workflows from the workflow-toolkit repository ([c2505798ee3bda0a5141b31ec600d6d2e32fcdb3](/commit/c2505798ee3bda0a5141b31ec600d6d2e32fcdb3))
+
+### ✅ Tests
+
+- set up extension test infrastructure with first unit tests ([ed09a6ca2b1455e0153ccf1077f3501e21edab51](/commit/ed09a6ca2b1455e0153ccf1077f3501e21edab51))
+
+### 🔨 Chore
+
+- add pnpm setup to devcontainer node feature ([be2b7c42db9f926ab99a152a3a7d6400a82926a7](/commit/be2b7c42db9f926ab99a152a3a7d6400a82926a7))
+- Add useful action button commands ([8cdc1a06c5e9a7c4f658a2bd58226a633769302c](/commit/8cdc1a06c5e9a7c4f658a2bd58226a633769302c))
+- Adding to the GitHub CLI container default settings ([60152bd3e0e5439b60e060422901cc15ed062608](/commit/60152bd3e0e5439b60e060422901cc15ed062608))
+- just simplify installation ([cb42be9c756de68cebe183dd438dc580835410bd](/commit/cb42be9c756de68cebe183dd438dc580835410bd))
+- migrate semantic-release config to JS format ([faf5bdd34b2e58a16c306a1d5c286d19cf1cdfc0](/commit/faf5bdd34b2e58a16c306a1d5c286d19cf1cdfc0))
+- Modified to require user confirmation when executing the release command ([450f49660e3d48466904b91d790ae0d8a1d065c1](/commit/450f49660e3d48466904b91d790ae0d8a1d065c1))
+- remove docker-in-docker feature ([2828dde0db387579e24fad7f6b465d2439093054](/commit/2828dde0db387579e24fad7f6b465d2439093054))
+- syncing documentation from the ai-config-toolkit repository ([6dc8e9a4f528c767f34ea7591b2cbe495037302b](/commit/6dc8e9a4f528c767f34ea7591b2cbe495037302b))
+
 ## [2.0.3](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.2...v2.0.3) (2025-11-16)
 
 ### 📚 Documentation
