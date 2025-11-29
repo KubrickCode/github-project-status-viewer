@@ -74,25 +74,24 @@ The extension follows Chrome Manifest V3 architecture with three distinct compon
 
 1. **Content Script** (`extension/src/content.ts`)
    - Runs on GitHub issue list pages matching `https://github.com/*/*/issues*`
-   - DOM manipulation: Parses issue numbers from `[data-testid="issue-pr-title-link"]` elements
    - Uses MutationObserver to detect dynamic page updates
-   - Sends requests to background script via `chrome.runtime.sendMessage`
-   - Renders status badges by injecting `<span class="project-status-badge">` elements
    - SPA routing support: Handles `turbo:load`, `pjax:end` events
 
 2. **Service Worker** (`extension/src/background.ts`)
    - Handles GraphQL API communication with GitHub
-   - Dynamically builds queries for multiple issues using aliases (e.g., `issue0: issue(number: 1)`)
    - Authenticates with OAuth tokens from chrome.storage.session
-   - Extracts status from `ProjectV2ItemFieldSingleSelectValue` nodes
    - Returns status map to content script
-   - Includes automatic token refresh logic
 
 3. **Popup UI** (`extension/src/popup.ts`)
-   - Handles GitHub OAuth login (using chrome.identity.launchWebAuthFlow)
    - Manages display mode settings (full/compact)
-   - Stores access/refresh tokens in chrome.storage.session
    - No direct communication with content script or background worker
+
+### Service Layer (`extension/src/services/`)
+
+- **auth.service.ts**: OAuth flow, token management (storage, exchange, validation)
+- **dom-parser.service.ts**: Issue number extraction, repository info parsing
+- **github-api.service.ts**: GraphQL query building, API communication
+- **badge-renderer.service.ts**: Badge DOM injection, styling, width alignment
 
 ### OAuth Authentication Flow
 
@@ -181,6 +180,16 @@ The server consists of Go serverless functions deployed on Vercel:
 - `/api/refresh`: Issues new access/refresh tokens using refresh token
 - Stores refresh tokens in Redis (Vercel KV)
 - JWT-based authentication
+
+### Package Structure (`server/pkg/`)
+
+- **errors/**: Centralized error types (sentinel errors pattern)
+- **auth/**: Authentication middleware
+- **jwt/**: Token generation and validation
+- **oauth/**: GitHub OAuth client, CORS handling
+- **redis/**: Vercel KV client
+- **httputil/**: HTTP response helpers, error formatting
+- **crypto/**: Random value generation
 
 ## Important Implementation Details
 
