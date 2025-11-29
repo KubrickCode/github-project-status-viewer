@@ -33,67 +33,67 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	refreshToken := tokenString[7:]
 	claims, err := jwt.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		httputil.WriteError(w, http.StatusUnauthorized, "invalid_refresh_token", err.Error())
+		httputil.WriteErrorWithLog(w, err, http.StatusUnauthorized, "invalid_refresh_token", "Invalid or expired refresh token")
 		return
 	}
 
 	redisClient, err := redis.GetClient()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Redis connection failed")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Storage service unavailable")
 		return
 	}
 
 	storedSessionID, err := redisClient.Get(redis.RefreshTokenKeyPrefix + claims.RefreshTokenID)
 	if err != nil {
 		if errors.Is(err, pkgerrors.ErrKeyNotFound) {
-			httputil.WriteError(w, http.StatusUnauthorized, "refresh_token_revoked", "Refresh token has been revoked or expired")
+			httputil.WriteErrorWithLog(w, pkgerrors.ErrRefreshTokenRevoked, http.StatusUnauthorized, "refresh_token_revoked", "Refresh token has been revoked or expired")
 		} else {
-			httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to verify refresh token")
+			httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to verify refresh token")
 		}
 		return
 	}
 
 	if storedSessionID != claims.SessionID {
-		httputil.WriteError(w, http.StatusUnauthorized, "session_mismatch", "Session mismatch detected")
+		httputil.WriteErrorWithLog(w, pkgerrors.ErrSessionMismatch, http.StatusUnauthorized, "session_mismatch", "Session mismatch detected")
 		return
 	}
 
 	exists, err := redisClient.Exists(redis.SessionKeyPrefix + claims.SessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to check session")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to verify session")
 		return
 	}
 
 	if !exists {
-		httputil.WriteError(w, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
+		httputil.WriteErrorWithLog(w, pkgerrors.ErrSessionNotFound, http.StatusUnauthorized, "session_not_found", "Session expired or invalid")
 		return
 	}
 
 	if err := redisClient.Delete(redis.RefreshTokenKeyPrefix + claims.RefreshTokenID); err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to revoke old refresh token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to revoke old refresh token")
 		return
 	}
 
 	newRefreshTokenID, err := crypto.GenerateRefreshTokenID()
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token ID")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create refresh token")
 		return
 	}
 
 	if err := redisClient.Set(redis.RefreshTokenKeyPrefix+newRefreshTokenID, claims.SessionID, redis.RefreshTokenTTL); err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to store new refresh token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to store refresh token")
 		return
 	}
 
 	newAccessToken, err := jwt.GenerateAccessToken(claims.SessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate access token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create access token")
 		return
 	}
 
 	newRefreshToken, err := jwt.GenerateRefreshToken(newRefreshTokenID, claims.SessionID)
 	if err != nil {
-		httputil.WriteError(w, http.StatusInternalServerError, "server_error", "Failed to generate refresh token")
+		httputil.WriteErrorWithLog(w, err, http.StatusInternalServerError, "server_error", "Failed to create refresh token")
 		return
 	}
 
