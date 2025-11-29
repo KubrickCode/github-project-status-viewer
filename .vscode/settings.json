@@ -55,7 +55,7 @@
       ]
     },
     {
-      "name": "Utils",
+      "name": "$(tools) Utils",
       "shortcut": "u",
       "color": "teal",
       "group": [
@@ -74,28 +74,28 @@
       ]
     },
     {
-      "name": "Rebuild",
+      "name": "$(sync) Rebuild",
       "color": "orange",
       "command": "just rebuild",
       "terminalName": "Rebuild",
       "useVsCodeApi": false
     },
     {
-      "name": "Release",
+      "name": "$(rocket) Release",
       "color": "hotpink",
       "command": "just release",
       "useVsCodeApi": false,
       "terminalName": "Release"
     },
     {
-      "name": "Test",
+      "name": "$(beaker) Test",
       "color": "tomato",
       "command": "just test",
       "terminalName": "Test",
       "shortcut": "t"
     },
     {
-      "name": "Claude",
+      "name": "$(hubot) Claude",
       "color": "blue",
       "shortcut": "c",
       "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
