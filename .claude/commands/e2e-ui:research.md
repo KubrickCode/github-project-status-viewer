@@ -308,6 +308,7 @@ This prevents duplicate test implementation and helps identify coverage gaps acc
 ### Guidelines
 
 **Do:**
+
 - Use values from playwright.config.ts (not hardcoded URLs)
 - Adapt flexibly to project structure
 - Group scenarios by page/feature
@@ -315,6 +316,7 @@ This prevents duplicate test implementation and helps identify coverage gaps acc
 - Mark source (📊 code analysis, 🎭 browser) and coverage status
 
 **Avoid:**
+
 - Skipping configuration file reading
 - Referencing old docs (create fresh)
 - Reporting bugs during research (save for execution phase)

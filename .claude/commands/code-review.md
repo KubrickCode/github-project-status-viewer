@@ -8,6 +8,7 @@ description: Review current git changes or latest commit using code-reviewer and
 ## Purpose
 
 Perform comprehensive code review of current changes or latest commit. Automatically invokes:
+
 - **code-reviewer agent**: Always (code quality, security, maintainability)
 - **architect-reviewer agent**: Conditionally (architectural impact assessment)
 
@@ -18,11 +19,13 @@ Perform comprehensive code review of current changes or latest commit. Automatic
 ### 1. Determine Review Target
 
 **Check for uncommitted changes:**
+
 ```bash
 git status --porcelain
 ```
 
 **Decision:**
+
 - If changes exist: Review uncommitted changes via `git diff`
 - If no changes: Review latest commit via `git log -1` and `git show HEAD`
 
@@ -31,12 +34,14 @@ git status --porcelain
 **Extract metrics from git output:**
 
 Count:
+
 - Files changed
 - Lines added/removed
 - Directories affected
 - New files vs modifications
 
 Detect:
+
 - Database migration files (`migrations/`, `schema.prisma`, `*.sql`)
 - API contract files (`*.graphql`, `openapi.yaml`, API route files)
 - Configuration files (`package.json`, `go.mod`, `docker-compose.yml`)
@@ -74,16 +79,16 @@ The code-reviewer agent has access to Read, Write, Edit, Bash, and Grep tools an
 
 **Scope Classification Criteria** (score each criterion met):
 
-| Criterion | Threshold | Score |
-|-----------|-----------|-------|
-| Files Modified | ≥ 8 files | +1 |
-| Total Lines Changed | ≥ 300 lines | +1 |
-| Directories Affected | ≥ 3 directories | +1 |
-| New Module/Package | New directory with ≥3 files | +1 |
-| API Contract Changes | Modified: schema/, .graphql, api/, route files | +1 |
-| Database Schema | Modified: migrations, schema files, ORM models | +1 |
-| Config/Infrastructure | Modified: docker-compose, Dockerfile, K8s, CI/CD | +1 |
-| Dependency Changes | Modified: package.json, go.mod, requirements.txt | +1 |
+| Criterion             | Threshold                                        | Score |
+| --------------------- | ------------------------------------------------ | ----- |
+| Files Modified        | ≥ 8 files                                        | +1    |
+| Total Lines Changed   | ≥ 300 lines                                      | +1    |
+| Directories Affected  | ≥ 3 directories                                  | +1    |
+| New Module/Package    | New directory with ≥3 files                      | +1    |
+| API Contract Changes  | Modified: schema/, .graphql, api/, route files   | +1    |
+| Database Schema       | Modified: migrations, schema files, ORM models   | +1    |
+| Config/Infrastructure | Modified: docker-compose, Dockerfile, K8s, CI/CD | +1    |
+| Dependency Changes    | Modified: package.json, go.mod, requirements.txt | +1    |
 
 **Decision**:
 
@@ -164,13 +169,16 @@ The architect-reviewer agent has access to Read, Write, Edit, Bash, Glob, and Gr
 Based on agent feedback, generate action items:
 
 ### Critical (Must Fix)
+
 - [ ] {issue 1}
 - [ ] {issue 2}
 
 ### High Priority (Should Fix)
+
 - [ ] {issue 3}
 
 ### Suggestions (Consider)
+
 - [ ] {improvement 1}
 
 ---
@@ -223,6 +231,7 @@ Based on agent feedback, generate action items:
 9. Generate actionable checklist
 
 **Token optimization:**
+
 - Use `git diff --stat` and `git show --stat` for metrics (avoid full diff parsing)
 - Only pass full diff content to agents, not to your own analysis
 - Let agents handle file reading - don't pre-read all changed files

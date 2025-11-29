@@ -214,9 +214,9 @@ Focus on: {user focus area or "general UI/UX improvement"}
 
 ### Recommended Libraries
 
-| Category | Library | Score | Bundle Size | Why |
-|----------|---------|-------|-------------|-----|
-| {category} | {library} | {X}/10 | {size} | {reason} |
+| Category   | Library   | Score  | Bundle Size | Why      |
+| ---------- | --------- | ------ | ----------- | -------- |
+| {category} | {library} | {X}/10 | {size}      | {reason} |
 
 ### Migration Considerations
 

@@ -7,6 +7,7 @@ description: Generate a comprehensive markdown summary of our conversation for s
 ## Required Output
 
 This command generates and saves a markdown file. Always:
+
 1. Analyze the conversation
 2. Create the file using Write tool
 3. Save to: `./handoff-summary-YYYYMMDD-HHMMSS.md`
