@@ -1,14 +1,16 @@
-import { API } from "./constants/api";
 import { STORAGE_KEYS } from "./constants/storage";
-import { CSS_CLASSES, ELEMENT_IDS, STATUS_ICONS, UI_TIMING } from "./constants/ui";
+import { CSS_CLASSES, ELEMENT_IDS, STATUS_ICONS, UI_MESSAGES, UI_TIMING } from "./constants/ui";
+import {
+  clearTokens,
+  exchangeCodeForTokens,
+  generateState,
+  initiateOAuth,
+  isAuthenticated,
+  storeTokens,
+} from "./services/auth.service";
 import { DisplayMode, StatusType } from "./shared/types";
 
 (() => {
-  type CallbackResponse = {
-    access_token: string;
-    refresh_token: string;
-  };
-
   type UIElements = {
     displayModeSelect: HTMLSelectElement;
     loggedInSection: HTMLElement;
@@ -22,12 +24,6 @@ import { DisplayMode, StatusType } from "./shared/types";
   };
 
   let statusHideTimer: ReturnType<typeof setTimeout> | null = null;
-
-  const generateState = (): string => {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
-  };
 
   const getUIElements = (): UIElements => {
     const getElement = <T>(id: string): T => {
@@ -89,14 +85,6 @@ import { DisplayMode, StatusType } from "./shared/types";
     }
   };
 
-  const checkAuthStatus = async (): Promise<boolean> => {
-    const result = await chrome.storage.session.get([
-      STORAGE_KEYS.ACCESS_TOKEN,
-      STORAGE_KEYS.REFRESH_TOKEN,
-    ]);
-    return !!(result[STORAGE_KEYS.ACCESS_TOKEN] && result[STORAGE_KEYS.REFRESH_TOKEN]);
-  };
-
   const addSuccessPulse = (element: HTMLElement) => {
     element.classList.add(CSS_CLASSES.POPUP.SUCCESS_PULSE);
     setTimeout(() => {
@@ -106,9 +94,9 @@ import { DisplayMode, StatusType } from "./shared/types";
 
   const updateUI = async (elements: UIElements, showPulse = false) => {
     const { loggedInSection, loginSection } = elements;
-    const isLoggedIn = await checkAuthStatus();
+    const authenticated = await isAuthenticated();
 
-    if (isLoggedIn) {
+    if (authenticated) {
       loginSection.classList.remove(CSS_CLASSES.POPUP.ACTIVE);
       loggedInSection.classList.add(CSS_CLASSES.POPUP.ACTIVE);
 
@@ -130,62 +118,15 @@ import { DisplayMode, StatusType } from "./shared/types";
     setButtonLoading(loginBtn, true);
 
     try {
+      showStatus(elements, UI_MESSAGES.AUTH.LOGIN_IN_PROGRESS, "info");
+
       const state = generateState();
-      const redirectUri = chrome.identity.getRedirectURL();
+      const { code, state: returnedState } = await initiateOAuth(state);
+      const tokens = await exchangeCodeForTokens({ code, state: returnedState });
 
-      await chrome.storage.session.set({ [STORAGE_KEYS.OAUTH_STATE]: state });
+      await storeTokens({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token });
 
-      const authUrl = `${API.GITHUB.OAUTH_URL}?client_id=${API.GITHUB.CLIENT_ID}&redirect_uri=${encodeURIComponent(
-        redirectUri
-      )}&scope=${API.GITHUB.SCOPE}&state=${state}`;
-
-      showStatus(elements, "Opening GitHub login...", "info");
-
-      const redirectUrl = await chrome.identity.launchWebAuthFlow({
-        interactive: true,
-        url: authUrl,
-      });
-
-      if (!redirectUrl) {
-        showStatus(elements, "Login cancelled", "error");
-        return;
-      }
-
-      const url = new URL(redirectUrl);
-      const code = url.searchParams.get("code");
-      const returnedState = url.searchParams.get("state");
-
-      if (!code || !returnedState) {
-        showStatus(elements, "Invalid OAuth response", "error");
-        return;
-      }
-
-      const { [STORAGE_KEYS.OAUTH_STATE]: storedState } = await chrome.storage.session.get([
-        STORAGE_KEYS.OAUTH_STATE,
-      ]);
-
-      if (returnedState !== storedState) {
-        showStatus(elements, "Security validation failed", "error");
-        return;
-      }
-
-      await chrome.storage.session.remove([STORAGE_KEYS.OAUTH_STATE]);
-
-      const callbackUrl = `${API.BASE_URL}/callback?code=${code}&state=${returnedState}`;
-      const response = await fetch(callbackUrl);
-
-      if (!response.ok) {
-        throw new Error(`Authentication failed (${response.status}). Please try again.`);
-      }
-
-      const data: CallbackResponse = await response.json();
-
-      await chrome.storage.session.set({
-        [STORAGE_KEYS.ACCESS_TOKEN]: data.access_token,
-        [STORAGE_KEYS.REFRESH_TOKEN]: data.refresh_token,
-      });
-
-      showStatus(elements, "Successfully connected to GitHub!", "success");
+      showStatus(elements, UI_MESSAGES.AUTH.LOGIN_SUCCESS, "success");
       await updateUI(elements, true);
 
       const [tab] = await chrome.tabs.query({
@@ -196,7 +137,8 @@ import { DisplayMode, StatusType } from "./shared/types";
         chrome.tabs.sendMessage(tab.id, { type: "RELOAD_BADGES" });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Login failed. Please try again.";
+      const message =
+        error instanceof Error ? error.message : UI_MESSAGES.AUTH.LOGIN_ERROR_FALLBACK;
       showStatus(elements, message, "error");
     } finally {
       setButtonLoading(loginBtn, false);
@@ -209,11 +151,11 @@ import { DisplayMode, StatusType } from "./shared/types";
     setButtonLoading(logoutBtn, true);
 
     try {
-      await chrome.storage.session.remove([STORAGE_KEYS.ACCESS_TOKEN, STORAGE_KEYS.REFRESH_TOKEN]);
-      showStatus(elements, "Signed out successfully", "success");
+      await clearTokens();
+      showStatus(elements, UI_MESSAGES.AUTH.LOGOUT_SUCCESS, "success");
       await updateUI(elements);
     } catch {
-      showStatus(elements, "Sign out failed. Please try again.", "error");
+      showStatus(elements, UI_MESSAGES.AUTH.LOGOUT_ERROR, "error");
     } finally {
       setButtonLoading(logoutBtn, false);
     }
@@ -227,7 +169,7 @@ import { DisplayMode, StatusType } from "./shared/types";
     displayModeSelect.value = mode;
   };
 
-  const handleDisplayModeChange = async (elements: UIElements, mode: DisplayMode) => {
+  const handleDisplayModeChange = async (_elements: UIElements, mode: DisplayMode) => {
     await chrome.storage.sync.set({ [STORAGE_KEYS.DISPLAY_MODE]: mode });
 
     const [tab] = await chrome.tabs.query({
