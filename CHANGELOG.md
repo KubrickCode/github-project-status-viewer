@@ -2,6 +2,12 @@
 
 ### 🐛 Bug Fixes
 
+- sync manifest.json version with semantic-release automation ([38a454629f7183ca70314bf7693b42bac2176eea](/commit/38a454629f7183ca70314bf7693b42bac2176eea))
+
+## 🎯 Highlights
+
+### 🐛 Bug Fixes
+
 - **release:** breaking change commits not triggering major version bump ([01a54e8fe1952c248bdf8cd3244a64e040fb68cb](/commit/01a54e8fe1952c248bdf8cd3244a64e040fb68cb))
 
 ## 🔧 Maintenance
