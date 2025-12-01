@@ -5,6 +5,7 @@ import {
   fetchProjectStatus,
   getGithubAccessToken,
   refreshTokens,
+  updateProjectStatus,
 } from "./github-api.service";
 
 const mockChromeStorage = {
@@ -148,11 +149,20 @@ describe("github-api.service", () => {
                     nodes: [
                       {
                         color: "GREEN",
-                        field: { name: "Status" },
+                        field: {
+                          id: "field-123",
+                          name: "Status",
+                          options: [
+                            { color: "GREEN", id: "opt-1", name: "Done" },
+                            { color: "YELLOW", id: "opt-2", name: "In Progress" },
+                          ],
+                        },
                         name: "Done",
                       },
                     ],
                   },
+                  id: "item-123",
+                  project: { id: "project-123" },
                 },
               ],
             },
@@ -184,12 +194,19 @@ describe("github-api.service", () => {
         {
           color: "GREEN",
           number: 1,
+          projectId: "project-123",
+          projectItemId: "item-123",
           status: "Done",
+          statusFieldId: "field-123",
+          statusOptions: [
+            { color: "GREEN", id: "opt-1", name: "Done" },
+            { color: "YELLOW", id: "opt-2", name: "In Progress" },
+          ],
         },
       ]);
     });
 
-    it("토큰 만료 시 자동 갱신 후 재시도", async () => {
+    it("should refresh token and retry when token is expired", async () => {
       (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: false,
@@ -227,12 +244,19 @@ describe("github-api.service", () => {
         {
           color: "GREEN",
           number: 1,
+          projectId: "project-123",
+          projectItemId: "item-123",
           status: "Done",
+          statusFieldId: "field-123",
+          statusOptions: [
+            { color: "GREEN", id: "opt-1", name: "Done" },
+            { color: "YELLOW", id: "opt-2", name: "In Progress" },
+          ],
         },
       ]);
     });
 
-    it("GraphQL 에러 발생 시 에러 처리", async () => {
+    it("should throw error when GraphQL returns error", async () => {
       (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           json: async () => ({ access_token: "github_token" }),
@@ -315,7 +339,11 @@ describe("github-api.service", () => {
         {
           color: null,
           number: 1,
+          projectId: null,
+          projectItemId: null,
           status: null,
+          statusFieldId: null,
+          statusOptions: null,
         },
       ]);
     });
@@ -333,11 +361,13 @@ describe("github-api.service", () => {
                       nodes: [
                         {
                           color: "GREEN",
-                          field: { name: "Status" },
+                          field: { id: "field-1", name: "Status", options: [] },
                           name: "Done",
                         },
                       ],
                     },
+                    id: "item-1",
+                    project: { id: "proj-1" },
                   },
                 ],
               },
@@ -351,11 +381,13 @@ describe("github-api.service", () => {
                       nodes: [
                         {
                           color: "YELLOW",
-                          field: { name: "Status" },
+                          field: { id: "field-2", name: "Status", options: [] },
                           name: "In Progress",
                         },
                       ],
                     },
+                    id: "item-2",
+                    project: { id: "proj-2" },
                   },
                 ],
               },
@@ -386,16 +418,24 @@ describe("github-api.service", () => {
       expect(result[0]).toEqual({
         color: "GREEN",
         number: 1,
+        projectId: "proj-1",
+        projectItemId: "item-1",
         status: "Done",
+        statusFieldId: "field-1",
+        statusOptions: [],
       });
       expect(result[1]).toEqual({
         color: "YELLOW",
         number: 2,
+        projectId: "proj-2",
+        projectItemId: "item-2",
         status: "In Progress",
+        statusFieldId: "field-2",
+        statusOptions: [],
       });
     });
 
-    it("GitHub API 오류 시 에러 처리", async () => {
+    it("should throw error when GitHub API returns error", async () => {
       (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           json: async () => ({ access_token: "github_token" }),
@@ -433,6 +473,185 @@ describe("github-api.service", () => {
           repo: "repo",
         })
       ).rejects.toThrow("Token verification failed: 500");
+    });
+  });
+
+  describe("updateProjectStatus", () => {
+    const mockMutationResponse = {
+      data: {
+        updateProjectV2ItemFieldValue: {
+          projectV2Item: {
+            fieldValues: {
+              nodes: [
+                {
+                  color: "GREEN",
+                  field: { name: "Status" },
+                  name: "Done",
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    it("should update status successfully", async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          json: async () => ({ access_token: "github_token" }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => JSON.stringify(mockMutationResponse),
+        });
+
+      const result = await updateProjectStatus({
+        accessToken: "access_token",
+        fieldId: "field-123",
+        itemId: "item-123",
+        optionId: "opt-1",
+        projectId: "project-123",
+        refreshToken: "refresh_token",
+      });
+
+      expect(result).toEqual({
+        color: "GREEN",
+        status: "Done",
+      });
+    });
+
+    it("should throw error when required parameters are missing", async () => {
+      await expect(
+        updateProjectStatus({
+          accessToken: "access_token",
+          fieldId: "",
+          itemId: "item-123",
+          optionId: "opt-1",
+          projectId: "project-123",
+          refreshToken: "refresh_token",
+        })
+      ).rejects.toThrow("Missing required parameters for updateProjectStatus");
+    });
+
+    it("should refresh token and retry when token is expired", async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({
+            access_token: "new_access_token",
+            refresh_token: "new_refresh_token",
+          }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ access_token: "github_token" }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => JSON.stringify(mockMutationResponse),
+        });
+
+      const result = await updateProjectStatus({
+        accessToken: "expired_token",
+        fieldId: "field-123",
+        itemId: "item-123",
+        optionId: "opt-1",
+        projectId: "project-123",
+        refreshToken: "refresh_token",
+      });
+
+      expect(mockChromeStorage.session.set).toHaveBeenCalledWith({
+        [STORAGE_KEYS.ACCESS_TOKEN]: "new_access_token",
+        [STORAGE_KEYS.REFRESH_TOKEN]: "new_refresh_token",
+      });
+      expect(result.status).toBe("Done");
+    });
+
+    it("should throw error when GraphQL returns error", async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          json: async () => ({ access_token: "github_token" }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              errors: [{ message: "Insufficient permissions", type: "FORBIDDEN" }],
+            }),
+        });
+
+      await expect(
+        updateProjectStatus({
+          accessToken: "access_token",
+          fieldId: "field-123",
+          itemId: "item-123",
+          optionId: "opt-1",
+          projectId: "project-123",
+          refreshToken: "refresh_token",
+        })
+      ).rejects.toThrow("GraphQL error");
+    });
+
+    it("should throw error when updated status is not found", async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          json: async () => ({ access_token: "github_token" }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              data: {
+                updateProjectV2ItemFieldValue: {
+                  projectV2Item: {
+                    fieldValues: { nodes: [] },
+                  },
+                },
+              },
+            }),
+        });
+
+      await expect(
+        updateProjectStatus({
+          accessToken: "access_token",
+          fieldId: "field-123",
+          itemId: "item-123",
+          optionId: "opt-1",
+          projectId: "project-123",
+          refreshToken: "refresh_token",
+        })
+      ).rejects.toThrow("Failed to get updated status");
+    });
+
+    it("should throw error when GitHub API returns error", async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          json: async () => ({ access_token: "github_token" }),
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => "Internal Server Error",
+        });
+
+      await expect(
+        updateProjectStatus({
+          accessToken: "access_token",
+          fieldId: "field-123",
+          itemId: "item-123",
+          optionId: "opt-1",
+          projectId: "project-123",
+          refreshToken: "refresh_token",
+        })
+      ).rejects.toThrow("GitHub API error: 500");
     });
   });
 });

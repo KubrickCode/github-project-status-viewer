@@ -1,10 +1,32 @@
 import { API, GRAPHQL } from "../constants/api";
 import { STORAGE_KEYS } from "../constants/storage";
-import { IssueStatus } from "../shared/types";
+import { IssueStatus, StatusOption } from "../shared/types";
 
 const HTTP_STATUS_UNAUTHORIZED = 401;
 const GRAPHQL_PROJECT_ITEMS_LIMIT = 10;
 const GRAPHQL_FIELD_VALUES_LIMIT = 20;
+
+const UPDATE_PROJECT_STATUS_MUTATION = `
+  mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+    updateProjectV2ItemFieldValue(input: $input) {
+      projectV2Item {
+        fieldValues(first: ${GRAPHQL_FIELD_VALUES_LIMIT}) {
+          nodes {
+            ... on ProjectV2ItemFieldSingleSelectValue {
+              name
+              color
+              field {
+                ... on ProjectV2SingleSelectField {
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 type FetchProjectStatusParams = {
   accessToken: string;
@@ -12,6 +34,20 @@ type FetchProjectStatusParams = {
   owner: string;
   refreshToken: string;
   repo: string;
+};
+
+type FieldValueNode = {
+  color?: string;
+  field?: {
+    id?: string;
+    name: string;
+    options?: Array<{
+      color: string;
+      id: string;
+      name: string;
+    }>;
+  };
+  name?: string;
 };
 
 type GraphQLResponse = {
@@ -31,11 +67,11 @@ type IssueNode = {
   projectItems: {
     nodes: Array<{
       fieldValues: {
-        nodes: Array<{
-          color?: string;
-          field?: { name: string };
-          name?: string;
-        }>;
+        nodes: FieldValueNode[];
+      };
+      id: string;
+      project: {
+        id: string;
       };
     }>;
   };
@@ -47,6 +83,31 @@ type RefreshResponse = {
 };
 
 type TokenError = Error & { status?: number };
+
+type UpdateStatusParams = {
+  accessToken: string;
+  fieldId: string;
+  itemId: string;
+  optionId: string;
+  projectId: string;
+  refreshToken: string;
+};
+
+type UpdateStatusResponse = {
+  data?: {
+    updateProjectV2ItemFieldValue?: {
+      projectV2Item?: {
+        fieldValues: {
+          nodes: FieldValueNode[];
+        };
+      };
+    };
+  };
+  errors?: Array<{
+    message: string;
+    type?: string;
+  }>;
+};
 
 type VerifyResponse = {
   access_token: string;
@@ -60,29 +121,7 @@ export const fetchProjectStatus = async ({
   repo,
 }: FetchProjectStatusParams): Promise<IssueStatus[]> => {
   const query = buildProjectStatusQuery(issueNumbers);
-
-  let githubAccessToken: string;
-  let currentAccessToken = accessToken;
-  let currentRefreshToken = refreshToken;
-
-  try {
-    githubAccessToken = await getGithubAccessToken(currentAccessToken);
-  } catch (error) {
-    if (isTokenError(error) && error.status === HTTP_STATUS_UNAUTHORIZED) {
-      const tokens = await refreshTokens(currentRefreshToken);
-      currentAccessToken = tokens.accessToken;
-      currentRefreshToken = tokens.refreshToken;
-
-      await chrome.storage.session.set({
-        [STORAGE_KEYS.ACCESS_TOKEN]: currentAccessToken,
-        [STORAGE_KEYS.REFRESH_TOKEN]: currentRefreshToken,
-      });
-
-      githubAccessToken = await getGithubAccessToken(currentAccessToken);
-    } else {
-      throw error;
-    }
-  }
+  const githubAccessToken = await getValidGithubAccessToken(accessToken, refreshToken);
 
   const response = await fetch(API.GITHUB.GRAPHQL_URL, {
     body: JSON.stringify({
@@ -126,7 +165,11 @@ export const fetchProjectStatus = async ({
     return {
       color: statusData?.color || null,
       number,
+      projectId: statusData?.projectId || null,
+      projectItemId: statusData?.projectItemId || null,
       status: statusData?.status || null,
+      statusFieldId: statusData?.statusFieldId || null,
+      statusOptions: statusData?.statusOptions || null,
     };
   });
 };
@@ -139,6 +182,10 @@ export const buildProjectStatusQuery = (issueNumbers: number[]): string => {
         number
         projectItems(first: ${GRAPHQL_PROJECT_ITEMS_LIMIT}) {
           nodes {
+            id
+            project {
+              id
+            }
             fieldValues(first: ${GRAPHQL_FIELD_VALUES_LIMIT}) {
               nodes {
                 ... on ProjectV2ItemFieldSingleSelectValue {
@@ -146,7 +193,13 @@ export const buildProjectStatusQuery = (issueNumbers: number[]): string => {
                   color
                   field {
                     ... on ProjectV2SingleSelectField {
+                      id
                       name
+                      options {
+                        id
+                        name
+                        color
+                      }
                     }
                   }
                 }
@@ -209,10 +262,17 @@ export const refreshTokens = async (
   };
 };
 
-const buildIssueStatusMap = (
-  issues: IssueNode[]
-): Map<number, { color: string | null; status: string }> => {
-  const issueStatusMap = new Map<number, { color: string | null; status: string }>();
+type IssueStatusData = {
+  color: string | null;
+  projectId: string | null;
+  projectItemId: string | null;
+  status: string;
+  statusFieldId: string | null;
+  statusOptions: StatusOption[] | null;
+};
+
+const buildIssueStatusMap = (issues: IssueNode[]): Map<number, IssueStatusData> => {
+  const issueStatusMap = new Map<number, IssueStatusData>();
 
   issues.forEach((issue) => {
     if (!issue.number || !issue.projectItems.nodes.length) return;
@@ -223,9 +283,21 @@ const buildIssueStatusMap = (
     );
 
     if (statusField?.name) {
+      const options: StatusOption[] | null = statusField.field?.options
+        ? statusField.field.options.map((opt) => ({
+            color: opt.color,
+            id: opt.id,
+            name: opt.name,
+          }))
+        : null;
+
       issueStatusMap.set(issue.number, {
         color: statusField.color || null,
+        projectId: firstProjectItem.project?.id || null,
+        projectItemId: firstProjectItem.id || null,
         status: statusField.name,
+        statusFieldId: statusField.field?.id || null,
+        statusOptions: options,
       });
     }
   });
@@ -235,4 +307,87 @@ const buildIssueStatusMap = (
 
 const isTokenError = (error: unknown): error is TokenError => {
   return error instanceof Error && "status" in error && typeof error.status === "number";
+};
+
+const getValidGithubAccessToken = async (
+  accessToken: string,
+  refreshToken: string
+): Promise<string> => {
+  try {
+    return await getGithubAccessToken(accessToken);
+  } catch (error) {
+    if (isTokenError(error) && error.status === HTTP_STATUS_UNAUTHORIZED) {
+      const tokens = await refreshTokens(refreshToken);
+
+      await chrome.storage.session.set({
+        [STORAGE_KEYS.ACCESS_TOKEN]: tokens.accessToken,
+        [STORAGE_KEYS.REFRESH_TOKEN]: tokens.refreshToken,
+      });
+
+      return await getGithubAccessToken(tokens.accessToken);
+    }
+    throw error;
+  }
+};
+
+export const updateProjectStatus = async ({
+  accessToken,
+  fieldId,
+  itemId,
+  optionId,
+  projectId,
+  refreshToken,
+}: UpdateStatusParams): Promise<{ color: string; status: string }> => {
+  if (!accessToken || !fieldId || !itemId || !optionId || !projectId || !refreshToken) {
+    throw new Error("Missing required parameters for updateProjectStatus");
+  }
+
+  const githubAccessToken = await getValidGithubAccessToken(accessToken, refreshToken);
+
+  const response = await fetch(API.GITHUB.GRAPHQL_URL, {
+    body: JSON.stringify({
+      query: UPDATE_PROJECT_STATUS_MUTATION,
+      variables: {
+        input: {
+          fieldId,
+          itemId,
+          projectId,
+          value: {
+            singleSelectOptionId: optionId,
+          },
+        },
+      },
+    }),
+    headers: {
+      Authorization: `Bearer ${githubAccessToken}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`GitHub API error: ${response.status} - ${responseText}`);
+  }
+
+  const data: UpdateStatusResponse = JSON.parse(responseText);
+
+  if (data.errors) {
+    throw new Error(`GraphQL error: ${JSON.stringify(data.errors)}`);
+  }
+
+  const fieldValues = data.data?.updateProjectV2ItemFieldValue?.projectV2Item?.fieldValues.nodes;
+  const statusField = fieldValues?.find(
+    (node) => node.field?.name === GRAPHQL.STATUS_FIELD_NAME && node.name
+  );
+
+  if (!statusField?.name) {
+    throw new Error("Failed to get updated status");
+  }
+
+  return {
+    color: statusField.color || "",
+    status: statusField.name,
+  };
 };
