@@ -5,9 +5,17 @@ import {
   calculateMaxBadgeWidth,
   insertBadge,
   refreshAllBadgeDisplays,
+  updateBadgeStatus,
 } from "./services/badge-renderer.service";
 import { extractIssueNumbers, parseRepositoryInfo } from "./services/dom-parser.service";
-import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
+import { closeDropdown, showDropdown } from "./services/status-dropdown.service";
+import {
+  DisplayMode,
+  GetProjectStatusRequest,
+  MessageResponse,
+  StatusOption,
+  UpdateProjectStatusRequest,
+} from "./shared/types";
 
 (() => {
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -41,9 +49,101 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     return value === "compact" ? "compact" : "full";
   };
 
-  const addStatusBadge = async (issueNumber: number, status: string, color: string | null) => {
+  const handleBadgeClick = (params: {
+    badge: HTMLElement;
+    currentStatus: string;
+    issueNumber: number;
+    projectId: string;
+    projectItemId: string;
+    statusFieldId: string;
+    statusOptions: StatusOption[];
+  }) => {
+    const repoInfo = parseRepositoryInfo();
+    if (!repoInfo) return;
+
+    const currentStatusFromBadge = params.badge.getAttribute("data-status") || params.currentStatus;
+
+    showDropdown({
+      anchor: params.badge,
+      currentStatus: currentStatusFromBadge,
+      onSelect: async (option: StatusOption) => {
+        if (option.name === currentStatusFromBadge) {
+          closeDropdown();
+          return;
+        }
+
+        closeDropdown();
+        updateBadgeStatus({
+          issueNumber: params.issueNumber,
+          newColor: option.color,
+          newStatus: option.name,
+        });
+
+        const request: UpdateProjectStatusRequest = {
+          fieldId: params.statusFieldId,
+          issueNumber: params.issueNumber,
+          itemId: params.projectItemId,
+          optionId: option.id,
+          owner: repoInfo.owner,
+          projectId: params.projectId,
+          repo: repoInfo.repo,
+          type: "UPDATE_PROJECT_STATUS",
+        };
+
+        try {
+          const response: MessageResponse = await chrome.runtime.sendMessage(request);
+
+          if (response.error) {
+            console.error("Failed to update status:", response.error);
+            updateBadgeStatus({
+              issueNumber: params.issueNumber,
+              newColor: null,
+              newStatus: currentStatusFromBadge,
+            });
+            return;
+          }
+
+          if (response.updatedStatus) {
+            updateBadgeStatus({
+              issueNumber: params.issueNumber,
+              newColor: response.updatedStatus.color,
+              newStatus: response.updatedStatus.status,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to update status:", error);
+          updateBadgeStatus({
+            issueNumber: params.issueNumber,
+            newColor: null,
+            newStatus: currentStatusFromBadge,
+          });
+        }
+      },
+      options: params.statusOptions,
+    });
+  };
+
+  const addStatusBadge = async (params: {
+    color: string | null;
+    issueNumber: number;
+    projectId: string | null;
+    projectItemId: string | null;
+    status: string;
+    statusFieldId: string | null;
+    statusOptions: StatusOption[] | null;
+  }) => {
     const displayMode = await getDisplayMode();
-    insertBadge({ color, displayMode, issueNumber, status });
+    insertBadge({
+      color: params.color,
+      displayMode,
+      issueNumber: params.issueNumber,
+      onBadgeClick: handleBadgeClick,
+      projectId: params.projectId,
+      projectItemId: params.projectItemId,
+      status: params.status,
+      statusFieldId: params.statusFieldId,
+      statusOptions: params.statusOptions,
+    });
   };
 
   const updateIssueStatuses = async () => {
@@ -58,7 +158,7 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
     isProcessing = true;
 
     try {
-      const request: MessageRequest = {
+      const request: GetProjectStatusRequest = {
         issueNumbers,
         owner: repoInfo.owner,
         repo: repoInfo.repo,
@@ -71,9 +171,25 @@ import { DisplayMode, MessageRequest, MessageResponse } from "./shared/types";
 
       const statuses = response.statuses || [];
 
-      for (const { color, number, status } of statuses) {
+      for (const {
+        color,
+        number,
+        projectId,
+        projectItemId,
+        status,
+        statusFieldId,
+        statusOptions,
+      } of statuses) {
         if (status) {
-          await addStatusBadge(number, status, color);
+          await addStatusBadge({
+            color,
+            issueNumber: number,
+            projectId,
+            projectItemId,
+            status,
+            statusFieldId,
+            statusOptions,
+          });
         }
       }
 
