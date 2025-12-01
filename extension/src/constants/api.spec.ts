@@ -16,7 +16,7 @@ describe("API Constants", () => {
 
     it("should have valid OAuth scope", () => {
       expect(API.GITHUB.SCOPE).toContain("repo");
-      expect(API.GITHUB.SCOPE).toContain("read:project");
+      expect(API.GITHUB.SCOPE).toContain("project");
     });
 
     it("should have correct structure", () => {

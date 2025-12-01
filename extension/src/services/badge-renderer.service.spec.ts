@@ -97,8 +97,21 @@ describe("badge-renderer.service", () => {
   });
 
   describe("createBadge", () => {
+    const defaultBadgeParams = {
+      issueNumber: 1,
+      projectId: null,
+      projectItemId: null,
+      statusFieldId: null,
+      statusOptions: null,
+    };
+
     it("should create badge with full display mode", () => {
-      const badge = createBadge({ color: "#ff5733", displayMode: "full", status: "In Progress" });
+      const badge = createBadge({
+        ...defaultBadgeParams,
+        color: "#ff5733",
+        displayMode: "full",
+        status: "In Progress",
+      });
 
       expect(badge.className).toBe(CSS_CLASSES.BADGE);
       expect(badge.getAttribute("data-status")).toBe("In Progress");
@@ -108,7 +121,12 @@ describe("badge-renderer.service", () => {
     });
 
     it("should create badge with compact display mode", () => {
-      const badge = createBadge({ color: "#00ff00", displayMode: "compact", status: "Done" });
+      const badge = createBadge({
+        ...defaultBadgeParams,
+        color: "#00ff00",
+        displayMode: "compact",
+        status: "Done",
+      });
 
       expect(badge.className).toContain(CSS_CLASSES.BADGE_COMPACT);
       expect(badge.textContent).toBe("");
@@ -119,7 +137,12 @@ describe("badge-renderer.service", () => {
     });
 
     it("should use default color when color is null", () => {
-      const badge = createBadge({ color: null, displayMode: "full", status: "Todo" });
+      const badge = createBadge({
+        ...defaultBadgeParams,
+        color: null,
+        displayMode: "full",
+        status: "Todo",
+      });
 
       expect(badge.style.getPropertyValue("--status-color")).toBe(UI_DEFAULTS.BADGE_COLOR);
     });
@@ -164,10 +187,18 @@ describe("badge-renderer.service", () => {
   });
 
   describe("insertBadge", () => {
+    const defaultInsertParams = {
+      projectId: null,
+      projectItemId: null,
+      statusFieldId: null,
+      statusOptions: null,
+    };
+
     it("should insert badge for matching issue number", () => {
       document.body.innerHTML = createIssueHTML(123);
 
       const result = insertBadge({
+        ...defaultInsertParams,
         color: "#ff5733",
         displayMode: "full",
         issueNumber: 123,
@@ -184,6 +215,7 @@ describe("badge-renderer.service", () => {
       document.body.innerHTML = createIssueHTML(123, { withBadge: true });
 
       const result = insertBadge({
+        ...defaultInsertParams,
         color: "#ff5733",
         displayMode: "full",
         issueNumber: 123,
@@ -199,6 +231,7 @@ describe("badge-renderer.service", () => {
       document.body.innerHTML = createIssueHTML(456);
 
       const result = insertBadge({
+        ...defaultInsertParams,
         color: "#ff5733",
         displayMode: "full",
         issueNumber: 123,
@@ -214,6 +247,7 @@ describe("badge-renderer.service", () => {
       document.body.innerHTML = createIssueHTML(123, { withoutH3: true });
 
       const result = insertBadge({
+        ...defaultInsertParams,
         color: "#ff5733",
         displayMode: "full",
         issueNumber: 123,
@@ -272,6 +306,14 @@ describe("badge-renderer.service", () => {
   });
 
   describe("various status values", () => {
+    const defaultBadgeParams = {
+      issueNumber: 1,
+      projectId: null,
+      projectItemId: null,
+      statusFieldId: null,
+      statusOptions: null,
+    };
+
     const testCases = [
       { color: "#cccccc", status: "Todo" },
       { color: "#ff5733", status: "In Progress" },
@@ -282,7 +324,7 @@ describe("badge-renderer.service", () => {
 
     testCases.forEach(({ color, status }) => {
       it(`should correctly render ${status} badge in full mode`, () => {
-        const badge = createBadge({ color, displayMode: "full", status });
+        const badge = createBadge({ ...defaultBadgeParams, color, displayMode: "full", status });
 
         expect(badge.textContent).toBe(status);
         expect(badge.style.getPropertyValue("--status-color")).toBe(color);
@@ -290,7 +332,7 @@ describe("badge-renderer.service", () => {
       });
 
       it(`should correctly render ${status} badge in compact mode`, () => {
-        const badge = createBadge({ color, displayMode: "compact", status });
+        const badge = createBadge({ ...defaultBadgeParams, color, displayMode: "compact", status });
 
         expect(badge.textContent).toBe("");
         expect(badge.title).toBe(status);
@@ -301,6 +343,7 @@ describe("badge-renderer.service", () => {
 
     it("should handle special characters in status", () => {
       const badge = createBadge({
+        ...defaultBadgeParams,
         color: "#ffaa00",
         displayMode: "full",
         status: "⚠️ Needs Review",
@@ -312,7 +355,12 @@ describe("badge-renderer.service", () => {
 
     it("should handle long status text", () => {
       const longStatus = "This is a very long status text that might need to be truncated";
-      const badge = createBadge({ color: "#000000", displayMode: "full", status: longStatus });
+      const badge = createBadge({
+        ...defaultBadgeParams,
+        color: "#000000",
+        displayMode: "full",
+        status: longStatus,
+      });
 
       expect(badge.textContent).toBe(longStatus);
       expect(badge.getAttribute("data-status")).toBe(longStatus);
