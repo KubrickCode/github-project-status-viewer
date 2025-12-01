@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GitHub Project Status Viewer",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Display GitHub Projects status in issue lists",
   "permissions": ["identity", "storage"],
   "host_permissions": [

@@ -1,3 +1,14 @@
+## 🔧 Maintenance
+
+### 🔨 Chore
+
+- add action buttons icon ([86c40994075582d4981d5d2ea6a8b93323c259dc](/commit/86c40994075582d4981d5d2ea6a8b93323c259dc))
+- **deps-dev:** bump lint-staged from 15.2.11 to 16.2.6 ([041a1b469d103083e80925d8b51dd7ade86a14ad](/commit/041a1b469d103083e80925d8b51dd7ade86a14ad))
+- **deps:** Bump actions/checkout from 4 to 6 ([634a72092a4ab28d00292d9096a7a374417f94f8](/commit/634a72092a4ab28d00292d9096a7a374417f94f8))
+- **deps:** Bump actions/setup-node from 4 to 6 ([d28e627fe8fd26bf57f0762d6fc97fc79b06e820](/commit/d28e627fe8fd26bf57f0762d6fc97fc79b06e820))
+- **deps:** Bump actions/upload-artifact from 4 to 5 ([839ac24126373119725879a4e8b34444f44f3e75](/commit/839ac24126373119725879a4e8b34444f44f3e75))
+- excluding lock files from the lint command ([51fc8f5ed7774fcea4bd8934b0f8e7842d99a660](/commit/51fc8f5ed7774fcea4bd8934b0f8e7842d99a660))
+
 ## 🎯 Highlights
 
 ### 🐛 Bug Fixes
