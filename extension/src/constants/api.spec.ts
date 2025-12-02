@@ -1,11 +1,10 @@
-import { API, ERROR_MESSAGES, GRAPHQL } from "./api";
+import { API, ERROR_MESSAGES } from "./api";
 
 describe("API Constants", () => {
   describe("API", () => {
     it("should have valid URL formats", () => {
       const urlPattern = /^https?:\/\/.+/;
       expect(API.BASE_URL).toMatch(urlPattern);
-      expect(API.GITHUB.GRAPHQL_URL).toMatch(urlPattern);
       expect(API.GITHUB.OAUTH_URL).toMatch(urlPattern);
     });
 
@@ -22,14 +21,6 @@ describe("API Constants", () => {
     it("should have correct structure", () => {
       expect(API.BASE_URL).toBeDefined();
       expect(API.GITHUB).toBeDefined();
-      expect(API.GITHUB.GRAPHQL_URL).toBeDefined();
-    });
-  });
-
-  describe("GRAPHQL", () => {
-    it("should have valid field names", () => {
-      expect(GRAPHQL.ISSUE_ALIAS_PREFIX).toBe("issue");
-      expect(GRAPHQL.STATUS_FIELD_NAME).toBe("Status");
     });
   });
 
@@ -40,7 +31,6 @@ describe("API Constants", () => {
     });
 
     it("should have correct structure", () => {
-      // Verify the error message exists and is a string
       expect(typeof ERROR_MESSAGES.AUTH_REQUIRED).toBe("string");
       expect(ERROR_MESSAGES.AUTH_REQUIRED.length).toBeGreaterThan(0);
     });
