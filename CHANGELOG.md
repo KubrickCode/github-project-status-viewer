@@ -1,5 +1,36 @@
 ## 🎯 Highlights
 
+### ✨ Features
+
+- add clickable status badges for GitHub Projects status changes ([100763139fadaa3b9539ed28a2832bb7d3bd0585](/commit/100763139fadaa3b9539ed28a2832bb7d3bd0585))
+
+## 🔧 Maintenance
+
+### 🔧 Internal Fixes
+
+- fix pnpm install not working in container environment ([3294781d7f3dcee025b8129f84616381e5a17352](/commit/3294781d7f3dcee025b8129f84616381e5a17352))
+
+### ♻️ Refactoring
+
+- move GitHub GraphQL API logic to server ([ab49151c94668dbdb16cdba727b606bc2655a762](/commit/ab49151c94668dbdb16cdba727b606bc2655a762))
+
+### 🔨 Chore
+
+- **deps-dev:** Bump semantic-release from 24.2.0 to 25.0.2 ([8ca860ad152b6720e0ed46230a017b4454cdf10e](/commit/8ca860ad152b6720e0ed46230a017b4454cdf10e))
+
+## 🔧 Maintenance
+
+### 🔨 Chore
+
+- add action buttons icon ([86c40994075582d4981d5d2ea6a8b93323c259dc](/commit/86c40994075582d4981d5d2ea6a8b93323c259dc))
+- **deps-dev:** bump lint-staged from 15.2.11 to 16.2.6 ([041a1b469d103083e80925d8b51dd7ade86a14ad](/commit/041a1b469d103083e80925d8b51dd7ade86a14ad))
+- **deps:** Bump actions/checkout from 4 to 6 ([634a72092a4ab28d00292d9096a7a374417f94f8](/commit/634a72092a4ab28d00292d9096a7a374417f94f8))
+- **deps:** Bump actions/setup-node from 4 to 6 ([d28e627fe8fd26bf57f0762d6fc97fc79b06e820](/commit/d28e627fe8fd26bf57f0762d6fc97fc79b06e820))
+- **deps:** Bump actions/upload-artifact from 4 to 5 ([839ac24126373119725879a4e8b34444f44f3e75](/commit/839ac24126373119725879a4e8b34444f44f3e75))
+- excluding lock files from the lint command ([51fc8f5ed7774fcea4bd8934b0f8e7842d99a660](/commit/51fc8f5ed7774fcea4bd8934b0f8e7842d99a660))
+
+## 🎯 Highlights
+
 ### 🐛 Bug Fixes
 
 - sync manifest.json version with semantic-release automation ([38a454629f7183ca70314bf7693b42bac2176eea](/commit/38a454629f7183ca70314bf7693b42bac2176eea))
