@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["jest", "chrome"]
+    "types": ["vitest/globals", "chrome"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "test-utils/**/*"]

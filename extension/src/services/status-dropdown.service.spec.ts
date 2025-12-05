@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 import { closeDropdown, setDropdownLoading, showDropdown } from "./status-dropdown.service";
 
 const DROPDOWN_CLASS = "project-status-dropdown";
@@ -37,7 +39,7 @@ describe("status-dropdown.service", () => {
 
   describe("showDropdown", () => {
     it("should create and display dropdown", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -53,7 +55,7 @@ describe("status-dropdown.service", () => {
 
     it("should render all status options", () => {
       const options = createMockOptions();
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -67,7 +69,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should mark current status as selected", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -82,7 +84,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should close existing dropdown before opening new one", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -103,7 +105,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should call onSelect when option is clicked", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
       const options = createMockOptions();
 
       showDropdown({
@@ -120,7 +122,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should position dropdown below anchor", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -136,7 +138,7 @@ describe("status-dropdown.service", () => {
 
   describe("closeDropdown", () => {
     it("should remove dropdown from DOM", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -159,7 +161,7 @@ describe("status-dropdown.service", () => {
 
   describe("setDropdownLoading", () => {
     it("should add loading class and disable buttons", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -180,7 +182,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should remove loading class and enable buttons", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -208,7 +210,7 @@ describe("status-dropdown.service", () => {
 
   describe("keyboard navigation", () => {
     it("should close dropdown on Escape key", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -225,7 +227,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should close dropdown on Tab key", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -242,7 +244,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should navigate with ArrowDown key", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -261,7 +263,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should navigate with ArrowUp key", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -282,7 +284,7 @@ describe("status-dropdown.service", () => {
 
   describe("outside click handling", () => {
     it("should close dropdown when clicking outside", async () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -299,7 +301,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should not close dropdown when clicking inside", async () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -319,7 +321,7 @@ describe("status-dropdown.service", () => {
 
   describe("color mapping", () => {
     it("should apply correct color to option dots", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,
@@ -333,7 +335,7 @@ describe("status-dropdown.service", () => {
     });
 
     it("should use default color for unknown color names", () => {
-      const onSelect = jest.fn();
+      const onSelect = vi.fn();
 
       showDropdown({
         anchor,

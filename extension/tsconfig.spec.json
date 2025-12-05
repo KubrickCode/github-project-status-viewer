@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["jest", "node", "chrome"]
+    "types": ["vitest/globals", "chrome"]
   },
   "include": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/*.ts"]
 }

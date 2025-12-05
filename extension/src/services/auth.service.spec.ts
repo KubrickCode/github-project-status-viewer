@@ -1,3 +1,5 @@
+import { Mock, vi } from "vitest";
+
 import { API } from "../constants/api";
 import { STORAGE_KEYS } from "../constants/storage";
 import {
@@ -11,22 +13,22 @@ import {
 } from "./auth.service";
 
 const mockChromeIdentity = {
-  getRedirectURL: jest.fn(),
-  launchWebAuthFlow: jest.fn(),
+  getRedirectURL: vi.fn(),
+  launchWebAuthFlow: vi.fn(),
 };
 
 const mockChromeStorage = {
   session: {
-    get: jest.fn(),
-    remove: jest.fn(),
-    set: jest.fn(),
+    get: vi.fn(),
+    remove: vi.fn(),
+    set: vi.fn(),
   },
 };
 
 const EXPECTED_DETERMINISTIC_STATE =
   "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
 
-const mockGetRandomValues = jest.fn((array: Uint8Array) => {
+const mockGetRandomValues = vi.fn((array: Uint8Array) => {
   for (let i = 0; i < array.length; i++) {
     array[i] = i;
   }
@@ -48,11 +50,11 @@ Object.defineProperty(globalThis, "crypto", {
   writable: true,
 });
 
-globalThis.fetch = jest.fn() as jest.Mock;
+globalThis.fetch = vi.fn() as Mock;
 
 describe("auth.service", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockGetRandomValues.mockImplementation((array: Uint8Array) => {
       for (let i = 0; i < array.length; i++) {
         array[i] = i;
@@ -290,7 +292,7 @@ describe("auth.service", () => {
         refresh_token: "github_refresh_token",
       };
 
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+      (globalThis.fetch as Mock).mockResolvedValueOnce({
         json: async () => mockResponse,
         ok: true,
       });
@@ -304,7 +306,7 @@ describe("auth.service", () => {
     });
 
     it("should throw error when callback fails with 400", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+      (globalThis.fetch as Mock).mockResolvedValueOnce({
         ok: false,
         status: 400,
       });
@@ -315,7 +317,7 @@ describe("auth.service", () => {
     });
 
     it("should throw error when callback fails with 401", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+      (globalThis.fetch as Mock).mockResolvedValueOnce({
         ok: false,
         status: 401,
       });
@@ -326,7 +328,7 @@ describe("auth.service", () => {
     });
 
     it("should throw error when callback fails with 500", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+      (globalThis.fetch as Mock).mockResolvedValueOnce({
         ok: false,
         status: 500,
       });

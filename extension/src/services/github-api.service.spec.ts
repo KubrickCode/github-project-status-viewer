@@ -1,10 +1,12 @@
+import { Mock, vi } from "vitest";
+
 import { API } from "../constants/api";
 import { STORAGE_KEYS } from "../constants/storage";
 import { fetchProjectStatus, refreshTokens, updateProjectStatus } from "./github-api.service";
 
 const mockChromeStorage = {
   session: {
-    set: jest.fn(),
+    set: vi.fn(),
   },
 };
 
@@ -14,7 +16,7 @@ Object.assign(globalThis, {
   },
 });
 
-globalThis.fetch = jest.fn() as jest.Mock;
+globalThis.fetch = vi.fn() as Mock;
 
 const createMockResponse = (options: {
   json?: () => Promise<unknown>;
@@ -30,7 +32,7 @@ const createMockResponse = (options: {
 
 describe("github-api.service", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("refreshTokens", () => {
@@ -39,7 +41,7 @@ describe("github-api.service", () => {
         access_token: "new_access_token",
         refresh_token: "new_refresh_token",
       };
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           json: async () => mockTokens,
           ok: true,
@@ -62,7 +64,7 @@ describe("github-api.service", () => {
     });
 
     it("토큰 갱신 실패 시 에러 발생", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           ok: false,
           status: 401,
@@ -94,7 +96,7 @@ describe("github-api.service", () => {
     };
 
     it("프로젝트 상태 조회 성공", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           json: async () => mockStatusResponse,
           ok: true,
@@ -125,7 +127,7 @@ describe("github-api.service", () => {
     });
 
     it("토큰 만료 시 갱신 후 재시도", async () => {
-      (globalThis.fetch as jest.Mock)
+      (globalThis.fetch as Mock)
         .mockResolvedValueOnce(createMockResponse({ ok: false, status: 401 }))
         .mockResolvedValueOnce(
           createMockResponse({
@@ -159,7 +161,7 @@ describe("github-api.service", () => {
     });
 
     it("API 에러 시 에러 발생", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           ok: false,
           status: 500,
@@ -186,7 +188,7 @@ describe("github-api.service", () => {
     };
 
     it("상태 업데이트 성공", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           json: async () => mockUpdateResponse,
           ok: true,
@@ -232,7 +234,7 @@ describe("github-api.service", () => {
     });
 
     it("토큰 만료 시 갱신 후 재시도", async () => {
-      (globalThis.fetch as jest.Mock)
+      (globalThis.fetch as Mock)
         .mockResolvedValueOnce(createMockResponse({ ok: false, status: 401 }))
         .mockResolvedValueOnce(
           createMockResponse({
@@ -267,7 +269,7 @@ describe("github-api.service", () => {
     });
 
     it("API 에러 시 에러 발생", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce(
+      (globalThis.fetch as Mock).mockResolvedValueOnce(
         createMockResponse({
           ok: false,
           status: 500,
