@@ -1,3 +1,23 @@
+## 🎯 Highlights
+
+### ✨ Features
+
+- add clickable status badges for GitHub Projects status changes ([100763139fadaa3b9539ed28a2832bb7d3bd0585](/commit/100763139fadaa3b9539ed28a2832bb7d3bd0585))
+
+## 🔧 Maintenance
+
+### 🔧 Internal Fixes
+
+- fix pnpm install not working in container environment ([3294781d7f3dcee025b8129f84616381e5a17352](/commit/3294781d7f3dcee025b8129f84616381e5a17352))
+
+### ♻️ Refactoring
+
+- move GitHub GraphQL API logic to server ([ab49151c94668dbdb16cdba727b606bc2655a762](/commit/ab49151c94668dbdb16cdba727b606bc2655a762))
+
+### 🔨 Chore
+
+- **deps-dev:** Bump semantic-release from 24.2.0 to 25.0.2 ([8ca860ad152b6720e0ed46230a017b4454cdf10e](/commit/8ca860ad152b6720e0ed46230a017b4454cdf10e))
+
 ## 🔧 Maintenance
 
 ### 🔨 Chore
