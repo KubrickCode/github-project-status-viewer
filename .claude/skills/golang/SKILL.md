@@ -124,7 +124,16 @@ description: |
 
 ### init() Functions
 
-- Generally forbidden. Prefer explicit initialization functions
+- Avoid unless necessary for registration patterns (database drivers, plugins)
+- Prefer explicit initialization functions for business logic
+- Acceptable uses:
+  - Driver/plugin registration (e.g., `database/sql` drivers)
+  - Static route/handler registration with no I/O
+  - Complex constant initialization without side effects
+- Forbidden uses:
+  - External I/O (database, file, network)
+  - Global state mutation
+  - Error-prone initialization (use constructors that return errors)
 
 ## Package Structure
 
@@ -134,7 +143,7 @@ description: |
 
 ## Recommended Libraries
 
-- Web: Fiber
+- Web: chi
 - DB: Bun, SQLBoiler (when managing migrations externally)
 - Logging: slog
 - CLI: cobra
