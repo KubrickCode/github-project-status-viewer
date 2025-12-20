@@ -1,94 +1,106 @@
-## 🎯 Highlights
+# Changelog
 
-### ✨ Features
+## [2.1.0](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.6...v2.1.0) (2025-12-05)
 
-- add clickable status badges for GitHub Projects status changes ([100763139fadaa3b9539ed28a2832bb7d3bd0585](/commit/100763139fadaa3b9539ed28a2832bb7d3bd0585))
+### 🎯 Highlights
 
-## 🔧 Maintenance
+#### ✨ Features
 
-### 🔧 Internal Fixes
+- add clickable status badges for GitHub Projects status changes ([1007631](https://github.com/KubrickCode/github-project-status-viewer/commit/100763139fadaa3b9539ed28a2832bb7d3bd0585))
 
-- fix pnpm install not working in container environment ([3294781d7f3dcee025b8129f84616381e5a17352](/commit/3294781d7f3dcee025b8129f84616381e5a17352))
+### 🔧 Maintenance
 
-### ♻️ Refactoring
+#### 🔧 Internal Fixes
 
-- move GitHub GraphQL API logic to server ([ab49151c94668dbdb16cdba727b606bc2655a762](/commit/ab49151c94668dbdb16cdba727b606bc2655a762))
+- fix pnpm install not working in container environment ([3294781](https://github.com/KubrickCode/github-project-status-viewer/commit/3294781d7f3dcee025b8129f84616381e5a17352))
 
-### 🔨 Chore
+#### ♻️ Refactoring
 
-- **deps-dev:** Bump semantic-release from 24.2.0 to 25.0.2 ([8ca860ad152b6720e0ed46230a017b4454cdf10e](/commit/8ca860ad152b6720e0ed46230a017b4454cdf10e))
+- move GitHub GraphQL API logic to server ([ab49151](https://github.com/KubrickCode/github-project-status-viewer/commit/ab49151c94668dbdb16cdba727b606bc2655a762))
 
-## 🔧 Maintenance
+#### 🔨 Chore
 
-### 🔨 Chore
+- **deps-dev:** Bump semantic-release from 24.2.0 to 25.0.2 ([8ca860a](https://github.com/KubrickCode/github-project-status-viewer/commit/8ca860ad152b6720e0ed46230a017b4454cdf10e))
 
-- add action buttons icon ([86c40994075582d4981d5d2ea6a8b93323c259dc](/commit/86c40994075582d4981d5d2ea6a8b93323c259dc))
-- **deps-dev:** bump lint-staged from 15.2.11 to 16.2.6 ([041a1b469d103083e80925d8b51dd7ade86a14ad](/commit/041a1b469d103083e80925d8b51dd7ade86a14ad))
-- **deps:** Bump actions/checkout from 4 to 6 ([634a72092a4ab28d00292d9096a7a374417f94f8](/commit/634a72092a4ab28d00292d9096a7a374417f94f8))
-- **deps:** Bump actions/setup-node from 4 to 6 ([d28e627fe8fd26bf57f0762d6fc97fc79b06e820](/commit/d28e627fe8fd26bf57f0762d6fc97fc79b06e820))
-- **deps:** Bump actions/upload-artifact from 4 to 5 ([839ac24126373119725879a4e8b34444f44f3e75](/commit/839ac24126373119725879a4e8b34444f44f3e75))
-- excluding lock files from the lint command ([51fc8f5ed7774fcea4bd8934b0f8e7842d99a660](/commit/51fc8f5ed7774fcea4bd8934b0f8e7842d99a660))
+## [2.0.6](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.5...v2.0.6) (2025-12-01)
 
-## 🎯 Highlights
+### 🔧 Maintenance
 
-### 🐛 Bug Fixes
+#### 🔨 Chore
 
-- sync manifest.json version with semantic-release automation ([38a454629f7183ca70314bf7693b42bac2176eea](/commit/38a454629f7183ca70314bf7693b42bac2176eea))
+- add action buttons icon ([86c4099](https://github.com/KubrickCode/github-project-status-viewer/commit/86c40994075582d4981d5d2ea6a8b93323c259dc))
+- **deps-dev:** bump lint-staged from 15.2.11 to 16.2.6 ([041a1b4](https://github.com/KubrickCode/github-project-status-viewer/commit/041a1b469d103083e80925d8b51dd7ade86a14ad))
+- **deps:** Bump actions/checkout from 4 to 6 ([634a720](https://github.com/KubrickCode/github-project-status-viewer/commit/634a72092a4ab28d00292d9096a7a374417f94f8))
+- **deps:** Bump actions/setup-node from 4 to 6 ([d28e627](https://github.com/KubrickCode/github-project-status-viewer/commit/d28e627fe8fd26bf57f0762d6fc97fc79b06e820))
+- **deps:** Bump actions/upload-artifact from 4 to 5 ([839ac24](https://github.com/KubrickCode/github-project-status-viewer/commit/839ac24126373119725879a4e8b34444f44f3e75))
+- excluding lock files from the lint command ([51fc8f5](https://github.com/KubrickCode/github-project-status-viewer/commit/51fc8f5ed7774fcea4bd8934b0f8e7842d99a660))
 
-## 🎯 Highlights
+## [2.0.5](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.4...v2.0.5) (2025-11-29)
 
-### 🐛 Bug Fixes
+### 🎯 Highlights
 
-- **release:** breaking change commits not triggering major version bump ([01a54e8fe1952c248bdf8cd3244a64e040fb68cb](/commit/01a54e8fe1952c248bdf8cd3244a64e040fb68cb))
+#### 🐛 Bug Fixes
 
-## 🔧 Maintenance
+- sync manifest.json version with semantic-release automation ([38a4546](https://github.com/KubrickCode/github-project-status-viewer/commit/38a454629f7183ca70314bf7693b42bac2176eea))
 
-### 📚 Documentation
+## [2.0.4](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.3...v2.0.4) (2025-11-29)
 
-- Remove subagent assignment model ([c7192f22b4b67b90a2a401feb4c321f34182f58c](/commit/c7192f22b4b67b90a2a401feb4c321f34182f58c))
-- sync ai documentation from the ai-config-toolkit repository ([c753415b0a4c018892e101bf0e887e20560eadb5](/commit/c753415b0a4c018892e101bf0e887e20560eadb5))
-- synchronizing documentation from the ai-config-toolkit repository ([62646ed9f7ee30a350d3e15347f51f0081e978c7](/commit/62646ed9f7ee30a350d3e15347f51f0081e978c7))
-- synchronizing documentation from the ai-config-toolkit repository ([f9575c484ed1461bd03c211c5c6affe4589a6230](/commit/f9575c484ed1461bd03c211c5c6affe4589a6230))
-- Synchronizing documentation from the ai-config-toolkit repository ([019f8749c87891708eef07854b529531036b4c01](/commit/019f8749c87891708eef07854b529531036b4c01))
-- Update docs ([6619cf8e45df86d4b3bff01eea3ef4d0401085d5](/commit/6619cf8e45df86d4b3bff01eea3ef4d0401085d5))
+### 🎯 Highlights
 
-### 💄 Styles
+#### 🐛 Bug Fixes
 
-- format code ([86b83df00563705e43d0f9537013cd7a19a8e989](/commit/86b83df00563705e43d0f9537013cd7a19a8e989))
-- format docs ([754f4a22ed1f48a6ed8f8a37ca8babad623e33f7](/commit/754f4a22ed1f48a6ed8f8a37ca8babad623e33f7))
+- **release:** breaking change commits not triggering major version bump ([01a54e8](https://github.com/KubrickCode/github-project-status-viewer/commit/01a54e8fe1952c248bdf8cd3244a64e040fb68cb))
 
-### ♻️ Refactoring
+### 🔧 Maintenance
 
-- extract badge rendering logic to standalone service ([718cf91b01a0268ea102289dbacdecb771cea0a5](/commit/718cf91b01a0268ea102289dbacdecb771cea0a5))
-- extract DOM parsing logic into dedicated service ([42d1b41b32db0fdf0e95915023883c929584f27d](/commit/42d1b41b32db0fdf0e95915023883c929584f27d))
-- extract duplicate crypto random generation logic to centralized utilities ([91a56a0bf1212d8b99e8a5c4054b85a1a1c6d303](/commit/91a56a0bf1212d8b99e8a5c4054b85a1a1c6d303))
-- extract duplicate TypeScript type definitions ([ebf851d116a6496593db12fa5799bc15a97f7858](/commit/ebf851d116a6496593db12fa5799bc15a97f7858))
-- extract GitHub API service layer with tests ([cab83c0088d65a5536657e4fcaf6a3880618b5aa](/commit/cab83c0088d65a5536657e4fcaf6a3880618b5aa))
-- extract hardcoded strings to centralized constant modules ([08d73fc15db19b4d6c59b6a8f0c46f96ca9b4e3c](/commit/08d73fc15db19b4d6c59b6a8f0c46f96ca9b4e3c))
-- extract OAuth authentication logic into dedicated service ([c524b2ea7de3f896928cefad52381d3ac00693bf](/commit/c524b2ea7de3f896928cefad52381d3ac00693bf))
-- prevent internal error exposure in API responses ([56a9a7f1ce2101a7f42f71cd426c5cba0f7584cc](/commit/56a9a7f1ce2101a7f42f71cd426c5cba0f7584cc))
-- replace init() pattern with sync.OnceValues for predictable initialization ([e6275d2a8083f90e038aacd97b1532969a938cde](/commit/e6275d2a8083f90e038aacd97b1532969a938cde))
-- standardize Go error handling with error chain support ([e2c2165c358ca8c89616b2ca04908b08eab15e02](/commit/e2c2165c358ca8c89616b2ca04908b08eab15e02))
-- Switch to using reusable workflows from the workflow-toolkit repository ([c2505798ee3bda0a5141b31ec600d6d2e32fcdb3](/commit/c2505798ee3bda0a5141b31ec600d6d2e32fcdb3))
+#### 📚 Documentation
 
-### ✅ Tests
+- Remove subagent assignment model ([c7192f2](https://github.com/KubrickCode/github-project-status-viewer/commit/c7192f22b4b67b90a2a401feb4c321f34182f58c))
+- sync ai documentation from the ai-config-toolkit repository ([c753415](https://github.com/KubrickCode/github-project-status-viewer/commit/c753415b0a4c018892e101bf0e887e20560eadb5))
+- synchronizing documentation from the ai-config-toolkit repository ([62646ed](https://github.com/KubrickCode/github-project-status-viewer/commit/62646ed9f7ee30a350d3e15347f51f0081e978c7))
+- synchronizing documentation from the ai-config-toolkit repository ([f9575c4](https://github.com/KubrickCode/github-project-status-viewer/commit/f9575c484ed1461bd03c211c5c6affe4589a6230))
+- Synchronizing documentation from the ai-config-toolkit repository ([019f874](https://github.com/KubrickCode/github-project-status-viewer/commit/019f8749c87891708eef07854b529531036b4c01))
+- Update docs ([6619cf8](https://github.com/KubrickCode/github-project-status-viewer/commit/6619cf8e45df86d4b3bff01eea3ef4d0401085d5))
 
-- set up extension test infrastructure with first unit tests ([ed09a6ca2b1455e0153ccf1077f3501e21edab51](/commit/ed09a6ca2b1455e0153ccf1077f3501e21edab51))
+#### 💄 Styles
 
-### 🔨 Chore
+- format code ([86b83df](https://github.com/KubrickCode/github-project-status-viewer/commit/86b83df00563705e43d0f9537013cd7a19a8e989))
+- format docs ([754f4a2](https://github.com/KubrickCode/github-project-status-viewer/commit/754f4a22ed1f48a6ed8f8a37ca8babad623e33f7))
 
-- add pnpm setup to devcontainer node feature ([be2b7c42db9f926ab99a152a3a7d6400a82926a7](/commit/be2b7c42db9f926ab99a152a3a7d6400a82926a7))
-- Add useful action button commands ([8cdc1a06c5e9a7c4f658a2bd58226a633769302c](/commit/8cdc1a06c5e9a7c4f658a2bd58226a633769302c))
-- Adding to the GitHub CLI container default settings ([60152bd3e0e5439b60e060422901cc15ed062608](/commit/60152bd3e0e5439b60e060422901cc15ed062608))
-- just simplify installation ([cb42be9c756de68cebe183dd438dc580835410bd](/commit/cb42be9c756de68cebe183dd438dc580835410bd))
-- migrate semantic-release config to JS format ([faf5bdd34b2e58a16c306a1d5c286d19cf1cdfc0](/commit/faf5bdd34b2e58a16c306a1d5c286d19cf1cdfc0))
-- Modified to require user confirmation when executing the release command ([450f49660e3d48466904b91d790ae0d8a1d065c1](/commit/450f49660e3d48466904b91d790ae0d8a1d065c1))
-- remove docker-in-docker feature ([2828dde0db387579e24fad7f6b465d2439093054](/commit/2828dde0db387579e24fad7f6b465d2439093054))
-- syncing documentation from the ai-config-toolkit repository ([6dc8e9a4f528c767f34ea7591b2cbe495037302b](/commit/6dc8e9a4f528c767f34ea7591b2cbe495037302b))
+#### ♻️ Refactoring
+
+- extract badge rendering logic to standalone service ([718cf91](https://github.com/KubrickCode/github-project-status-viewer/commit/718cf91b01a0268ea102289dbacdecb771cea0a5))
+- extract DOM parsing logic into dedicated service ([42d1b41](https://github.com/KubrickCode/github-project-status-viewer/commit/42d1b41b32db0fdf0e95915023883c929584f27d))
+- extract duplicate crypto random generation logic to centralized utilities ([91a56a0](https://github.com/KubrickCode/github-project-status-viewer/commit/91a56a0bf1212d8b99e8a5c4054b85a1a1c6d303))
+- extract duplicate TypeScript type definitions ([ebf851d](https://github.com/KubrickCode/github-project-status-viewer/commit/ebf851d116a6496593db12fa5799bc15a97f7858))
+- extract GitHub API service layer with tests ([cab83c0](https://github.com/KubrickCode/github-project-status-viewer/commit/cab83c0088d65a5536657e4fcaf6a3880618b5aa))
+- extract hardcoded strings to centralized constant modules ([08d73fc](https://github.com/KubrickCode/github-project-status-viewer/commit/08d73fc15db19b4d6c59b6a8f0c46f96ca9b4e3c))
+- extract OAuth authentication logic into dedicated service ([c524b2e](https://github.com/KubrickCode/github-project-status-viewer/commit/c524b2ea7de3f896928cefad52381d3ac00693bf))
+- prevent internal error exposure in API responses ([56a9a7f](https://github.com/KubrickCode/github-project-status-viewer/commit/56a9a7f1ce2101a7f42f71cd426c5cba0f7584cc))
+- replace init() pattern with sync.OnceValues for predictable initialization ([e6275d2](https://github.com/KubrickCode/github-project-status-viewer/commit/e6275d2a8083f90e038aacd97b1532969a938cde))
+- standardize Go error handling with error chain support ([e2c2165](https://github.com/KubrickCode/github-project-status-viewer/commit/e2c2165c358ca8c89616b2ca04908b08eab15e02))
+- Switch to using reusable workflows from the workflow-toolkit repository ([c250579](https://github.com/KubrickCode/github-project-status-viewer/commit/c2505798ee3bda0a5141b31ec600d6d2e32fcdb3))
+
+#### ✅ Tests
+
+- set up extension test infrastructure with first unit tests ([ed09a6c](https://github.com/KubrickCode/github-project-status-viewer/commit/ed09a6ca2b1455e0153ccf1077f3501e21edab51))
+
+#### 🔨 Chore
+
+- add pnpm setup to devcontainer node feature ([be2b7c4](https://github.com/KubrickCode/github-project-status-viewer/commit/be2b7c42db9f926ab99a152a3a7d6400a82926a7))
+- Add useful action button commands ([8cdc1a0](https://github.com/KubrickCode/github-project-status-viewer/commit/8cdc1a06c5e9a7c4f658a2bd58226a633769302c))
+- Adding to the GitHub CLI container default settings ([60152bd](https://github.com/KubrickCode/github-project-status-viewer/commit/60152bd3e0e5439b60e060422901cc15ed062608))
+- just simplify installation ([cb42be9](https://github.com/KubrickCode/github-project-status-viewer/commit/cb42be9c756de68cebe183dd438dc580835410bd))
+- migrate semantic-release config to JS format ([faf5bdd](https://github.com/KubrickCode/github-project-status-viewer/commit/faf5bdd34b2e58a16c306a1d5c286d19cf1cdfc0))
+- Modified to require user confirmation when executing the release command ([450f496](https://github.com/KubrickCode/github-project-status-viewer/commit/450f49660e3d48466904b91d790ae0d8a1d065c1))
+- remove docker-in-docker feature ([2828dde](https://github.com/KubrickCode/github-project-status-viewer/commit/2828dde0db387579e24fad7f6b465d2439093054))
+- syncing documentation from the ai-config-toolkit repository ([6dc8e9a](https://github.com/KubrickCode/github-project-status-viewer/commit/6dc8e9a4f528c767f34ea7591b2cbe495037302b))
 
 ## [2.0.3](https://github.com/KubrickCode/github-project-status-viewer/compare/v2.0.2...v2.0.3) (2025-11-16)
 
-### 📚 Documentation
+### 🔧 Maintenance
+
+#### 📚 Documentation
 
 - Add command execution principles to CLAUDE.md ([b9f0ed0](https://github.com/KubrickCode/github-project-status-viewer/commit/b9f0ed0fc5d2f1cabfe8b93879860ebb5b712da4))
 - Add Contributing section to README ([f9d4d71](https://github.com/KubrickCode/github-project-status-viewer/commit/f9d4d719b95884a3ae5860f4d895aceb2514642e))
@@ -100,13 +112,13 @@
 - Remove incorrectly formatted documents ([2903909](https://github.com/KubrickCode/github-project-status-viewer/commit/2903909ded4cd074c8dd225570744638a444a3b3))
 - Update CLAUDE.md ([d47eb92](https://github.com/KubrickCode/github-project-status-viewer/commit/d47eb925bae4e054d8f413909a9638dfe13dbf65))
 
-### 💄 Styles
+#### 💄 Styles
 
 - format code ([d6ea5ae](https://github.com/KubrickCode/github-project-status-viewer/commit/d6ea5aec96ee3c613c979cc75ef247ee1cf989ff))
 - format code ([8bedf42](https://github.com/KubrickCode/github-project-status-viewer/commit/8bedf42857e146799cbfed94a2f7f61bd0fcb2db))
 - modify broken formatted doc ([4befce9](https://github.com/KubrickCode/github-project-status-viewer/commit/4befce9a7d183dc29ec64eecf6f42978cbff5d57))
 
-### 🔨 Chore
+#### 🔨 Chore
 
 - add dual language document generation to workflow commands ([c1f8f38](https://github.com/KubrickCode/github-project-status-viewer/commit/c1f8f3827b94fd704a1666ec5df629e59b98533c))
 - Add frequently used mcp servers ([e3da98a](https://github.com/KubrickCode/github-project-status-viewer/commit/e3da98a8bb22dc18e80193b5f40911437bfe428f))
@@ -144,26 +156,26 @@
 - update claude code terminal name ([c29faa3](https://github.com/KubrickCode/github-project-status-viewer/commit/c29faa3e4c6b6d11d34edca4164317871063c2a6))
 - update gitignore ([7ec044e](https://github.com/KubrickCode/github-project-status-viewer/commit/7ec044eae3a50bcac5fbfb8921e2a09ed75052c6))
 
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
 ## [2.0.2](https://github.com/KubrickCode/github-project-status-viewer/compare/v0.0.4...v2.0.2) (2025-10-11)
 
-### ✨ Features
+### 🎯 Highlights
+
+#### ✨ Features
 
 - Added display mode selection feature and implemented compact mode
 - Add Privacy Policy page
 - Add automated Chrome Web Store deployment
 
-### 🐛 Bug Fixes
+#### 🐛 Bug Fixes
 
 - Fix 401 error after 2-hour session expiry by implementing refresh token rotation
 - Fix badge display on initial page load for SPA navigation
 - Reload status badges immediately after successful login
 - Solve the problem of the margin below the login button being too wide when the popover is not logged in
 
-### 💄 Styles
+### 🔧 Maintenance
+
+#### 💄 Styles
 
 - Redesign popup UI with GitHub Primer design system
 - Improve status badge design for visual consistency
@@ -173,7 +185,7 @@ All notable changes to this project will be documented in this file.
 - Reduce the length of the description in the pop-up
 - Edit popup title
 
-### 📚 Documentation
+#### 📚 Documentation
 
 - Add display mode info in readme
 - Improved visibility of before-after comparison screenshots
@@ -182,16 +194,16 @@ All notable changes to this project will be documented in this file.
 - Edit readme
 - Add logo image
 
-### ✅ Tests
+#### ✅ Tests
 
 - Add go test cases
 
-### 🔧 CI/CD
+#### 🔧 CI/CD
 
 - Bump softprops/action-gh-release from 1 to 2
 - Bump actions/checkout from 4 to 5
 
-### 🔨 Chore
+#### 🔨 Chore
 
 - Modify the main package version to match the manifest version
 - Version sync
@@ -200,57 +212,67 @@ All notable changes to this project will be documented in this file.
 
 ## [0.0.4](https://github.com/KubrickCode/github-project-status-viewer/compare/v0.0.3...v0.0.4) (2025-10-07)
 
-### 🔨 Chore
+### 🔧 Maintenance
+
+#### 🔨 Chore
 
 - Release v0.0.4
 
 ## [0.0.3](https://github.com/KubrickCode/github-project-status-viewer/compare/v0.0.2...v0.0.3) (2025-10-07)
 
-### ✨ Features
+### 🎯 Highlights
+
+#### ✨ Features
 
 - Migrate from PAT to OAuth authentication with JWT tokens
 - Implement JWT and Redis-based token security
 - Switch vercel server from TypeScript to Go
 - Add vercel server as MVP
 
-### 🔧 CI/CD
+### 🔧 Maintenance
+
+#### 🔧 CI/CD
 
 - Configure Vercel deployment for Go serverless functions
 - Use index.go in subdirectories for Vercel Go functions
 - Go version modified
 - Add go devcontainer configurations
 
-### 🔨 Chore
+#### 🔨 Chore
 
 - Add .env in gitignore
 - Edit gitignore
 
 ## [0.0.2](https://github.com/KubrickCode/github-project-status-viewer/releases/tag/v0.0.2) (2025-10-06)
 
-### ✨ Features
+### 🎯 Highlights
+
+#### ✨ Features
 
 - Implemented the MVP model
 - Replace hardcoded project statuses with dynamic detection
 - Use actual GitHub Projects status colors instead of hash-based colors
 - Move status badges before issue titles with uniform width alignment
 
-### 💄 Styles
+### 🔧 Maintenance
+
+#### 💄 Styles
 
 - Improve project status badge styling for better visibility and distinction from labels
 - Fix vertical alignment of status badges with issue titles and labels
 
-### 📚 Documentation
+#### 📚 Documentation
 
 - Update README
 - Add funding
 - Add claude markdown
 
-### 🔧 CI/CD
+#### 🔧 CI/CD
 
 - Add release workflow
 - Add release command
 
-### 🔨 Chore
+#### 🔨 Chore
 
 - Initial commit
 - Initialize environment
