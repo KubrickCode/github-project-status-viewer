@@ -1,6 +1,7 @@
 {
   "name": "github-project-status-viewer",
   "dockerComposeFile": "docker-compose.yml",
+  "initializeCommand": "touch ${HOME}/.env.secrets",
   "service": "workspace",
   "workspaceFolder": "/workspaces/github-project-status-viewer",
   "features": {

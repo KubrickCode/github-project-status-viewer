@@ -6,6 +6,7 @@
 .env.*
 
 .claude/settings.local.json
+.claude-sessions/
 node_modules/
 .pnpm-store/
 
